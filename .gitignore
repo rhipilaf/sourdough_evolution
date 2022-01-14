@@ -2,6 +2,7 @@ mess/
 data/
 output/
 doc/
+rapports/*.Rmd
 
 .RHistory
 .RData
