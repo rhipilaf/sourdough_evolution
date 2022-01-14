@@ -162,3 +162,10 @@ ggplot(data_phenot) +
 ```
 
 ![](data_phenot_overview_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+# What’s next ?
+
+Now I’m trying to extimate these parameters via model fitting of growth
+curves (logistic with a lag, Gompertz growth model). Giving that in our
+case, the curves look nice, and I think that fitting a model should be
+fine.
