@@ -2,8 +2,8 @@
 
 ## Structure du répertoire
 
-- Dans `rapports/` vous pouvez trouver des petits rapports en mardown 
+- Dans `rapports/` : petits rapports en .markdown pour nos réunions
 
-- Dans `scripts/` vous pouvez trouver l'ensemble des scripts que j'utilise pour les analyses
+- Dans `scripts/` : ensemble des scripts utilisés pour les analyses
 
-- Dans `notes/` je stocke ma prise de notes
+- Dans `notes/` : j'y stocke ma prise de notes
