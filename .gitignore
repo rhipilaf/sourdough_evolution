@@ -1,0 +1,7 @@
+mess/
+data/
+output/
+doc/
+
+.RHistory
+.RData
