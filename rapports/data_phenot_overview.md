@@ -1,28 +1,45 @@
-``` r
+```r
 library(magrittr)
+library(tidyr)
 library(dplyr)
 library(stringr)
 library(ggplot2)
+library(lme4)
 ```
 
 # Data import
 
-``` r
-data_phenot <- read.csv("data/data_robot/data_phenot.csv") %>%
-  mutate(date_hour = as.Date(date_hour, format = "%d/%m/%Y %H:%M:%S")) %>%
-  as_tibble()
+```r
+source("scripts/import_data.R")
+
+head(data_cyto)
+```
+
+    ## # A tibble: 6 x 11
+    ##   date  strain_name robot robot_id robot_inoc_id position bloc  cell_t0 cell_t27
+    ##   <chr> <chr>       <chr> <chr>    <chr>            <dbl> <fct> <chr>   <chr>   
+    ## 1 2021~ B32-B10     Phen~ R20-202~ 25                   1 1     973940  55208000
+    ## 2 2021~ B29-1       Phen~ R20-202~ 34                   3 1     1009320 50224000
+    ## 3 2021~ B55-A4      Phen~ R20-202~ 28                   5 1     1031260 60560000
+    ## 4 2021~ B29-9       Phen~ R20-202~ 36                   7 1     1147000 55224000
+    ## 5 2021~ B29-5       Phen~ R20-202~ 35                   9 1     915780  62216000
+    ## 6 2021~ B16-H4      Phen~ R20-202~ 7                   12 1     1006280 83248000
+    ## # ... with 2 more variables: death_prct <chr>, notes <chr>
+
+```r
 head(data_phenot)
 ```
 
-    ## # A tibble: 6 x 6
-    ##   robot_id         date_hour   time weight_loss position tube_format
-    ##   <chr>            <date>     <dbl>       <dbl>    <int> <chr>      
-    ## 1 R20-20210930-001 2021-09-30 0.607        42.9        1 R20        
-    ## 2 R20-20210930-001 2021-09-30 1.45         42.9        1 R20        
-    ## 3 R20-20210930-001 2021-09-30 2.29         42.9        1 R20        
-    ## 4 R20-20210930-001 2021-09-30 3.13         42.9        1 R20        
-    ## 5 R20-20210930-001 2021-09-30 3.97         42.9        1 R20        
-    ## 6 R20-20210930-001 2021-09-30 4.82         42.9        1 R20
+    ## # A tibble: 6 x 8
+    ##   robot_id         date_hour   time weight_loss position tube_format co2_cumul
+    ##   <chr>            <date>     <dbl>       <dbl>    <int> <chr>           <dbl>
+    ## 1 R20-20210930-001 2021-09-30 0.607        42.9        1 R20            0     
+    ## 2 R20-20210930-001 2021-09-30 1.45         42.9        1 R20            0     
+    ## 3 R20-20210930-001 2021-09-30 2.29         42.9        1 R20            0     
+    ## 4 R20-20210930-001 2021-09-30 3.13         42.9        1 R20            0.0658
+    ## 5 R20-20210930-001 2021-09-30 3.97         42.9        1 R20            0     
+    ## 6 R20-20210930-001 2021-09-30 4.82         42.9        1 R20           -0.197 
+    ## # ... with 1 more variable: co2_flowrate_3p <dbl>
 
 # Functions
 
@@ -31,7 +48,7 @@ production with the assumption that the lost weight is only/mostly CO2.
 
 *Author : Hugo Devillers*
 
-``` r
+```r
 weight_to_cumul <- function(w, start = 2, t.ref = 2, vol = 15.2) {
 
   # Compute the weight of reference
@@ -42,15 +59,15 @@ weight_to_cumul <- function(w, start = 2, t.ref = 2, vol = 15.2) {
   } else {
     w.ref <- rep(mean(w[t.ref]), w.len)
   }
-  
+
   # Compute the cumulated values
   out <- (w.ref - w) / vol * 1000
-  
+
   # Reset to 0 first values if required
   if( start > 1) {
     out[seq(1, start-1, by=1)] <- 0
   }
-  
+
   return(out)
 }
 ```
@@ -61,28 +78,28 @@ here) in the middle of these two points.
 
 *Author : Hugo Devillers*
 
-``` r
+```r
 moving_diff <- function(x, ti, l=3) {
-  
+
   # Extract parameters
   r <- floor(l/2)
   n <- length(x)
-  
+
   # Extend time
   dt1 <- ti[2] -ti[1]
   dtn <- ti[n] - ti[n-1]
   exti1 <- seq(ti[1] - n * dt1, ti[1] - dt1, by = dt1)
   extin <- seq(ti[n] + dtn, ti[n] + n * dtn, by= dtn)
   ti <- c(exti1, ti, extin)
-  
+
   # Extend x (values)
   x <- c(rep(x[1], r), x, rep(x[n], r))
-  
+
   # New parameters
   n <- length(x)
   from <- 1:(n-l+1)
   to <- l:n
-  
+
   # Compute sliding weighted diff
   tmp <- mapply(function(fr, to, r, x, ti){
     num <- mean(x[(fr+r):to]) - mean(x[fr:(fr+r)])
@@ -90,7 +107,7 @@ moving_diff <- function(x, ti, l=3) {
     den <- mean(ti[c((fr+r),to)]) - mean(ti[c(fr,(fr+r))])
     return( num / den )
   }, fr = from, to = to, MoreArgs = list(x = x, r=r, ti=ti), SIMPLIFY = TRUE)
-  
+
   # Return the output
   return(tmp) 
 }
@@ -101,7 +118,7 @@ moving_diff <- function(x, ti, l=3) {
 Computes of CO<sub>2</sub> cumulation and CO<sub>2</sub> flow rate at
 each time *t*.
 
-``` r
+```r
 data_phenot %<>%
   group_by(robot_id) %>%
   arrange(robot_id, time) %>%
@@ -111,18 +128,19 @@ data_phenot %<>%
   ungroup()
 ```
 
-# Extracts statistics from the CO2 cumulation and CO2 flow rate
+# Extracts statistics from the CO2 cumulation (g) and CO2 flow rate (g/h)
 
-``` r
+```r
 data_phenot_parms <- data_phenot %>%
   group_by(robot_id) %>%
-  summarise(date_start = min(date_hour),
-            date_end = max(date_hour),
-            co2max = max(co2_cumul),
-            vmax = max(co2_flowrate_3p),
-            tvmax = time[which(co2_flowrate_3p == max(co2_flowrate_3p))],
-            latency = time[min(which(co2_cumul > 1))]) %>% 
-  ungroup()
+  summarise(date_start = min(date_hour), # Moment of the first mesure
+            date_end = max(date_hour), # Moment of the last measure
+            co2max = max(co2_cumul), # Maximum cumulated CO2
+            vmax = max(co2_flowrate_3p), # Maximum CO2 flow rate
+            tvmax = time[which(co2_flowrate_3p == max(co2_flowrate_3p))], # Time at the maximum CO2 flow rate
+            t1g = time[min(which(co2_cumul > 1))]) %>% # Latency : time at which cumulated CO2 reaches 1 for the first time
+  ungroup() %>%
+  mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)])
 ```
 
 `date_start` : moment of the first mesure
@@ -135,13 +153,15 @@ data_phenot_parms <- data_phenot %>%
 
 `tvmax` : Time at the maximum CO2 flow rate
 
-`latency` : time at which cumulated CO2 reaches 1 for the first time
+`t1g` : time at which cumulated CO2 reaches 1 for the first time
 
 # Data overview
 
 ## Trends of weight loss time
 
-``` r
+We don’t see a lot of variability.
+
+```r
 ggplot(data_phenot) +
   aes(x = time, y = co2_cumul, group = robot_id) +
   geom_point(shape = ".") +
@@ -153,7 +173,7 @@ ggplot(data_phenot) +
 
 ## Trends of flow rate over time
 
-``` r
+```r
 ggplot(data_phenot) +
   aes(x = time, y = co2_flowrate_3p, group = robot_id) +
   geom_point(shape = ".") +
@@ -162,6 +182,90 @@ ggplot(data_phenot) +
 ```
 
 ![](data_phenot_overview_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+## Distributions of the parameters (*t*<sub>*V**M**A**X*</sub>, *V*<sub>*M**A**X*</sub>, *t*<sub>1*g*</sub>, *C**O*2<sub>*M**A**X*</sub>)
+
+```r
+data_phenot_parms_tmp <- data_phenot_parms %>%
+  mutate(bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)]) %>%
+  pivot_longer(cols = c("co2max", "vmax", "tvmax", "t1g"),
+               names_to = "parameter", values_to = "value")
+```
+
+## Global variability of each parameter
+
+```r
+data_phenot_parms_tmp %>%
+  mutate(parameter = case_when(parameter == "co2max" ~ paste(parameter, "(g)"),
+                               parameter == "vmax" ~ paste(parameter, "(g/h)"),
+                               parameter == "tvmax" ~ paste(parameter, "(h)"),
+                               parameter == "t1g" ~ paste(parameter, "(h)"))) %>%
+  ggplot() +
+  aes(x = value) +
+  geom_density(fill = alpha("red", 0.5)) +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+```
+
+![](data_phenot_overview_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+## By strain
+
+The 3 replicates of each strain are bound with a line :
+
+```r
+data_phenot_parms_tmp %>%
+  mutate(parameter = case_when(parameter == "co2max" ~ paste(parameter, "(g)"),
+                               parameter == "vmax" ~ paste(parameter, "(g/h)"),
+                               parameter == "tvmax" ~ paste(parameter, "(h)"),
+                               parameter == "t1g" ~ paste(parameter, "(h)"))) %>%
+  ggplot(., aes(y = value, group = strain_name, x = strain_name)) +
+  geom_point(alpha = 0.3) +
+  geom_line(alpha = 0.3) +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+```
+
+![](data_phenot_overview_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+Intra-strain variance :
+
+```r
+data_phenot_parms_tmp %>%
+  group_by(strain_name, parameter) %>%
+  summarise(strain_var = var(value)) %>%
+  mutate(parameter = case_when(parameter == "co2max" ~ paste(parameter, "(g)"),
+                               parameter == "vmax" ~ paste(parameter, "(g/h)"),
+                               parameter == "tvmax" ~ paste(parameter, "(h)"),
+                               parameter == "t1g" ~ paste(parameter, "(h)"))) %>%
+  ggplot(., aes(x = strain_var)) +
+  geom_histogram(fill = alpha("green", 0.5)) +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+```
+
+![](data_phenot_overview_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+## ‘Block effect’
+
+```r
+bloc_effect_model <- data_phenot_parms_tmp %>% 
+  group_by(parameter) %>%
+  summarise(p.value = anova(lm(value ~ bloc))$'Pr(>F)'[1])
+
+data_phenot_parms_tmp %>%
+  mutate(parameter = case_when(parameter == "co2max" ~ paste(parameter, "(g)"),
+                               parameter == "vmax" ~ paste(parameter, "(g/h)"),
+                               parameter == "tvmax" ~ paste(parameter, "(h)"),
+                               parameter == "t1g" ~ paste(parameter, "(h)"))) %>%
+  ggplot(., aes(y = value, fill = bloc)) +
+  geom_boxplot(alpha = 0.3) +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+```
+
+![](data_phenot_overview_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 # What’s next ?
 

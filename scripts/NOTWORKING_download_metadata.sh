@@ -15,4 +15,4 @@ fi
 #The following downloads the up-to-date xlsx file that contains metadata from Google drive and puts it in the data/ folder
 
 gdown 'https://drive.google.com/uc?export=download&id=1qOzys6wmWXGDDwgGs46XF4GGNarq3_JG'
-mv metadata_saccharomyces_cerevisiae.xlsx ../data/metadata_saccharomyces_cerevisiae.xlsx
+mv metadata_saccharomyces_cerevisiae.xlsx ~/winhome/Desktop/Projets/sourdough_evolution/data/metadata_saccharomyces_cerevisiae.xlsx

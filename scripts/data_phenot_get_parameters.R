@@ -80,13 +80,14 @@ data_phenot %<>%
   ungroup()
 
 
-# Extracts statistiques from the CO2 cumulation and CO2 flow rate
+# Extracts statistiques from the CO2 cumulation (g) and CO2 flow rate (g/h)
 data_phenot_parms <- data_phenot %>%
   group_by(robot_id) %>%
   summarise(date_start = min(date_hour), # Moment of the first mesure
             date_end = max(date_hour), # Moment of the last measure
-            co2max = max(cumul_co2), # Maximum cumulated CO2
-            vmax = max(co2_flowrate), # Maximum CO2 flow rate
-            tvmax = time[which(co2_flowrate == max(co2_flowrate))], # Time at the maximum CO2 flow rate
-            latency = time[min(which(cumul_co2 > 1))]) # Latency : time at which cumulated CO2 reaches 1 for the first time
-
+            co2max = max(co2_cumul), # Maximum cumulated CO2
+            vmax = max(co2_flowrate_3p), # Maximum CO2 flow rate
+            tvmax = time[which(co2_flowrate_3p == max(co2_flowrate_3p))], # Time at the maximum CO2 flow rate
+            t1g = time[min(which(co2_cumul > 1))]) %>% # Latency : time at which cumulated CO2 reaches 1 for the first time
+  ungroup() %>%
+  mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)])
