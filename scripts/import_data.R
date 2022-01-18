@@ -1,9 +1,9 @@
 
 # Data
 
-strains <- read.csv("data/strains.csv")
-bakers <- read.csv("data/bakers.csv")
-flours <- read.csv("data/flours.csv")
+strains <- readxl::read_xlsx("data/strains.xlsx")
+bakers <- readxl::read_xlsx("data/bakers.xlsx")
+flours <- readxl::read_xlsx("data/flours.xlsx")
 
 
 # Fitness data
@@ -21,6 +21,4 @@ data_cyto <- readxl::read_xlsx("data/data_robot/data_cyto.xlsx") %>%
 source("scripts/data_phenot_get_parameters.R")
 
 cyto_what_is_this <- c("robot","modalities","robot_inoc_id","classement_id","position","MTA","MTF","robot_before")
-
-
 
