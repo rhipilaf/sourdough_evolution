@@ -1,3 +1,12 @@
+---
+title: "Phenotypic data Overview & Parameters estimation"
+author: "Théo Guillerminet"
+date: "14 Janvier 2022"
+output:
+  html_document:
+    keep_md: yes
+---
+
 ```r
 library(magrittr)
 library(tidyr)
@@ -15,36 +24,40 @@ source("scripts/import_data.R")
 head(data_cyto)
 ```
 
-    ## # A tibble: 6 x 11
-    ##   date  strain_name robot robot_id robot_inoc_id position bloc  cell_t0 cell_t27
-    ##   <chr> <chr>       <chr> <chr>    <chr>            <dbl> <fct> <chr>   <chr>   
-    ## 1 2021~ B32-B10     Phen~ R20-202~ 25                   1 1     973940  55208000
-    ## 2 2021~ B29-1       Phen~ R20-202~ 34                   3 1     1009320 50224000
-    ## 3 2021~ B55-A4      Phen~ R20-202~ 28                   5 1     1031260 60560000
-    ## 4 2021~ B29-9       Phen~ R20-202~ 36                   7 1     1147000 55224000
-    ## 5 2021~ B29-5       Phen~ R20-202~ 35                   9 1     915780  62216000
-    ## 6 2021~ B16-H4      Phen~ R20-202~ 7                   12 1     1006280 83248000
-    ## # ... with 2 more variables: death_prct <chr>, notes <chr>
+```
+## # A tibble: 6 x 11
+##   date  strain_name robot robot_id robot_inoc_id position bloc  cell_t0 cell_t27
+##   <chr> <chr>       <chr> <chr>    <chr>            <dbl> <fct> <chr>   <chr>   
+## 1 2021~ B32-B10     Phen~ R20-202~ 25                   1 1     973940  55208000
+## 2 2021~ B29-1       Phen~ R20-202~ 34                   3 1     1009320 50224000
+## 3 2021~ B55-A4      Phen~ R20-202~ 28                   5 1     1031260 60560000
+## 4 2021~ B29-9       Phen~ R20-202~ 36                   7 1     1147000 55224000
+## 5 2021~ B29-5       Phen~ R20-202~ 35                   9 1     915780  62216000
+## 6 2021~ B16-H4      Phen~ R20-202~ 7                   12 1     1006280 83248000
+## # ... with 2 more variables: death_prct <chr>, notes <chr>
+```
 
 ```r
 head(data_phenot)
 ```
 
-    ## # A tibble: 6 x 8
-    ##   robot_id         date_hour   time weight_loss position tube_format co2_cumul
-    ##   <chr>            <date>     <dbl>       <dbl>    <int> <chr>           <dbl>
-    ## 1 R20-20210930-001 2021-09-30 0.607        42.9        1 R20            0     
-    ## 2 R20-20210930-001 2021-09-30 1.45         42.9        1 R20            0     
-    ## 3 R20-20210930-001 2021-09-30 2.29         42.9        1 R20            0     
-    ## 4 R20-20210930-001 2021-09-30 3.13         42.9        1 R20            0.0658
-    ## 5 R20-20210930-001 2021-09-30 3.97         42.9        1 R20            0     
-    ## 6 R20-20210930-001 2021-09-30 4.82         42.9        1 R20           -0.197 
-    ## # ... with 1 more variable: co2_flowrate_3p <dbl>
+```
+## # A tibble: 6 x 8
+##   robot_id         date_hour   time weight_loss position tube_format co2_cumul
+##   <chr>            <date>     <dbl>       <dbl>    <int> <chr>           <dbl>
+## 1 R20-20210930-001 2021-09-30 0.607        42.9        1 R20            0     
+## 2 R20-20210930-001 2021-09-30 1.45         42.9        1 R20            0     
+## 3 R20-20210930-001 2021-09-30 2.29         42.9        1 R20            0     
+## 4 R20-20210930-001 2021-09-30 3.13         42.9        1 R20            0.0658
+## 5 R20-20210930-001 2021-09-30 3.97         42.9        1 R20            0     
+## 6 R20-20210930-001 2021-09-30 4.82         42.9        1 R20           -0.197 
+## # ... with 1 more variable: co2_flowrate_3p <dbl>
+```
 
 # Functions
 
-`weight_to_cumul` : function converting weight loss to cumulated CO2
-production with the assumption that the lost weight is only/mostly CO2.
+`weight_to_cumul` : function converting weight loss to cumulated CO2 production with the 
+assumption that the lost weight is only/mostly CO2.
 
 *Author : Hugo Devillers*
 
@@ -72,9 +85,7 @@ weight_to_cumul <- function(w, start = 2, t.ref = 2, vol = 15.2) {
 }
 ```
 
-`moving_diff` : function computing a moving difference between points
-separated of l-1 points to estimate the local slope (i.e. CO2 flow rate,
-here) in the middle of these two points.
+`moving_diff` : function computing a moving difference between points separated of l-1 points to estimate the local slope (i.e. CO2 flow rate, here) in the middle of these two points.
 
 *Author : Hugo Devillers*
 
@@ -115,8 +126,7 @@ moving_diff <- function(x, ti, l=3) {
 
 # Extraction of parameters
 
-Computes of CO<sub>2</sub> cumulation and CO<sub>2</sub> flow rate at
-each time *t*.
+Computes of CO<sub>2</sub> cumulation and CO<sub>2</sub> flow rate at each time $t$.
 
 ```r
 data_phenot %<>%
@@ -159,7 +169,7 @@ data_phenot_parms <- data_phenot %>%
 
 ## Trends of weight loss time
 
-We don’t see a lot of variability.
+We don't see a lot of variability.
 
 ```r
 ggplot(data_phenot) +
@@ -169,7 +179,7 @@ ggplot(data_phenot) +
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](2022-01-14_Data_phenot_overview_including_outliers_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 ## Trends of flow rate over time
 
@@ -181,9 +191,9 @@ ggplot(data_phenot) +
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](2022-01-14_Data_phenot_overview_including_outliers_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
-## Distributions of the parameters (*t*<sub>*V**M**A**X*</sub>, *V*<sub>*M**A**X*</sub>, *t*<sub>1*g*</sub>, *C**O*2<sub>*M**A**X*</sub>)
+## Distributions of the parameters ($t_{VMAX}$, $V_{MAX}$, $t_{1g}$, $CO2_{MAX}$)
 
 ```r
 data_phenot_parms_tmp <- data_phenot_parms %>%
@@ -207,7 +217,7 @@ data_phenot_parms_tmp %>%
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](2022-01-14_Data_phenot_overview_including_outliers_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 ## By strain
 
@@ -227,25 +237,27 @@ data_phenot_parms_tmp %>%
   theme(axis.text.x = element_blank())
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
-Strains for which *C**O*2<sub>*M**A**X*</sub> is under 5 grams :
+![](2022-01-14_Data_phenot_overview_including_outliers_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+Strains for which $CO2_{MAX}$ is under 5 grams :
 
 ```r
 data_phenot_parms_tmp %>% filter(parameter == "co2max", value < 5)
 ```
 
-    ## # A tibble: 9 x 7
-    ##   robot_id         date_start date_end   strain_name    bloc  parameter value
-    ##   <chr>            <date>     <date>     <chr>          <fct> <chr>     <dbl>
-    ## 1 R20-20210930-065 2021-09-30 2021-10-01 LB-RT17-T1-3   3     co2max    0.263
-    ## 2 R20-20210930-074 2021-09-30 2021-10-01 LB-RT17-T1-3   3     co2max    0.526
-    ## 3 R20-20211012-034 2021-10-12 2021-10-13 LB-RT17-T1-3   5     co2max    0.493
-    ## 4 R20-20211207-007 2021-12-07 2021-12-08 MB-ST23-T1-4   7     co2max    0.855
-    ## 5 R20-20211207-040 2021-12-07 2021-12-08 MB-ST23-T1-3   7     co2max    0.789
-    ## 6 R20-20211207-069 2021-12-07 2021-12-08 MB-MAISON-T1-4 7     co2max    0.954
-    ## 7 R20-20211215-018 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    0.954
-    ## 8 R20-20211215-032 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    0.789
-    ## 9 R20-20211215-069 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    1.28
+```
+## # A tibble: 9 x 7
+##   robot_id         date_start date_end   strain_name    bloc  parameter value
+##   <chr>            <date>     <date>     <chr>          <fct> <chr>     <dbl>
+## 1 R20-20210930-065 2021-09-30 2021-10-01 LB-RT17-T1-3   3     co2max    0.263
+## 2 R20-20210930-074 2021-09-30 2021-10-01 LB-RT17-T1-3   3     co2max    0.526
+## 3 R20-20211012-034 2021-10-12 2021-10-13 LB-RT17-T1-3   5     co2max    0.493
+## 4 R20-20211207-007 2021-12-07 2021-12-08 MB-ST23-T1-4   7     co2max    0.855
+## 5 R20-20211207-040 2021-12-07 2021-12-08 MB-ST23-T1-3   7     co2max    0.789
+## 6 R20-20211207-069 2021-12-07 2021-12-08 MB-MAISON-T1-4 7     co2max    0.954
+## 7 R20-20211215-018 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    0.954
+## 8 R20-20211215-032 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    0.789
+## 9 R20-20211215-069 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    1.28
+```
 
 ### Distribution of intra-strain variance
 
@@ -263,12 +275,11 @@ data_phenot_parms_tmp %>%
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](2022-01-14_Data_phenot_overview_including_outliers_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
-## ‘Block effect’
+## 'Block effect'
 
-Il n’y a que 7 blocs dans cette figure car les souches de Lauriane n’ont
-pas été phénotypées dans les blocs 1, 2, et 3.
+Il n'y a que 7 blocs dans cette figure car les souches de Lauriane n'ont pas été phénotypées dans les blocs 1, 2, et 3.
 
 ```r
 bloc_effect_model <- data_phenot_parms_tmp %>% 
@@ -286,11 +297,8 @@ data_phenot_parms_tmp %>%
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](2022-01-14_Data_phenot_overview_including_outliers_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
-# What’s next ?
+# What's next ?
 
-Now I’m trying to extimate these parameters via model fitting of growth
-curves (logistic with a lag, Gompertz growth model). Giving that in our
-case, the curves look nice, and I think that fitting a model should be
-fine.
+Now I'm trying to extimate these parameters via model fitting of growth curves (logistic with a lag, Gompertz growth model). Giving that in our case, the curves look nice, and I think that fitting a model should be fine.
