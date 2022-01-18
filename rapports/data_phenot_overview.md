@@ -211,7 +211,7 @@ data_phenot_parms_tmp %>%
 
 ## By strain
 
-The 3 replicates of each strain are bound with a line :
+<!-- ### The 3 replicates of each strain are bound with a line -->
 
 ```r
 data_phenot_parms_tmp %>%
@@ -228,8 +228,26 @@ data_phenot_parms_tmp %>%
 ```
 
 ![](data_phenot_overview_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+Strains for which *C**O*2<sub>*M**A**X*</sub> is under 5 grams :
 
-Intra-strain variance :
+```r
+data_phenot_parms_tmp %>% filter(parameter == "co2max", value < 5)
+```
+
+    ## # A tibble: 9 x 7
+    ##   robot_id         date_start date_end   strain_name    bloc  parameter value
+    ##   <chr>            <date>     <date>     <chr>          <fct> <chr>     <dbl>
+    ## 1 R20-20210930-065 2021-09-30 2021-10-01 LB-RT17-T1-3   3     co2max    0.263
+    ## 2 R20-20210930-074 2021-09-30 2021-10-01 LB-RT17-T1-3   3     co2max    0.526
+    ## 3 R20-20211012-034 2021-10-12 2021-10-13 LB-RT17-T1-3   5     co2max    0.493
+    ## 4 R20-20211207-007 2021-12-07 2021-12-08 MB-ST23-T1-4   7     co2max    0.855
+    ## 5 R20-20211207-040 2021-12-07 2021-12-08 MB-ST23-T1-3   7     co2max    0.789
+    ## 6 R20-20211207-069 2021-12-07 2021-12-08 MB-MAISON-T1-4 7     co2max    0.954
+    ## 7 R20-20211215-018 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    0.954
+    ## 8 R20-20211215-032 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    0.789
+    ## 9 R20-20211215-069 2021-12-15 2021-12-16 MB-MAISON-T1-5 9     co2max    1.28
+
+### Distribution of intra-strain variance
 
 ```r
 data_phenot_parms_tmp %>%
@@ -245,9 +263,12 @@ data_phenot_parms_tmp %>%
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](data_phenot_overview_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ## ‘Block effect’
+
+Il n’y a que 7 blocs dans cette figure car les souches de Lauriane n’ont
+pas été phénotypées dans les blocs 1, 2, et 3.
 
 ```r
 bloc_effect_model <- data_phenot_parms_tmp %>% 
@@ -265,7 +286,7 @@ data_phenot_parms_tmp %>%
   theme_minimal()
 ```
 
-![](data_phenot_overview_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](data_phenot_overview_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 # What’s next ?
 
