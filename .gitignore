@@ -3,6 +3,7 @@ data/
 output/
 doc/
 rapports/*.Rmd
+rapports/*.html
 
 .RHistory
 .RData
