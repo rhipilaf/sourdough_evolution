@@ -6,7 +6,7 @@ Mesure au cours du temps (entre 26 et 28 heures) toutes les 51 minutes, de la ma
 
 Barboteur sur le dessus, donc pas de contamination possible, et pas d'entrée de matière, uniquement une sortie. Un tube ne peut que perdre de la matière.
 
-Composition du milieu ? Liquide/solide ?
+Composition du milieu ? Liquide/solide ? (cf. Bigey et al. 2021)
 
 A $t_0$ et à $t_{32}$, comptage au cytomètre de flux le nombre de cellules.
 
@@ -24,9 +24,12 @@ A $t_0$ et à $t_{32}$, comptage au cytomètre de flux le nombre de cellules.
   
   * Moindres carrés
   
-  * 
+  * Maximum likelihood
+    
+    * nlmer
   
   * Bayésien
     
     * Tuto : [Fitting differential equation models with Stan](https://shug3502.github.io/blog/DifferentialEqnsStan)
     * Sensitivity analysis : [adjustr](https://corymccartan.github.io/adjustr/), [rgiordan/StanSensitivity](https://github.com/rgiordan/StanSensitivity), 
+    * [Hierarchical Gompertz model avec *brms*](https://discourse.mc-stan.org/t/hierarchical-gompertz-model/13724/13), [Stan coding question for Gompertz curve fitting](https://discourse.mc-stan.org/t/stan-coding-question-for-gompertz-curve-fitting/14618), [Estimating Non-Linear Models with brms](https://cran.r-project.org/web/packages/brms/vignettes/brms_nonlinear.html)
