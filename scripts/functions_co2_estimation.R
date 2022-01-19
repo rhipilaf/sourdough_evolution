@@ -1,15 +1,10 @@
 
-
-data_phenot <- read.csv("data/data_robot/data_phenot.csv") %>%
-  mutate(date_hour = as.Date(date_hour, format = "%d/%m/%Y %H:%M:%S"))
-
-
 # weight_to_cumul : function converting weight loss to cumulated CO2 production with the 
 # assumption that the lost weight is only/mostly CO2
 # Author : Hugo Devillers
 
 weight_to_cumul <- function(w, start = 2, t.ref = 2, vol = 15.2) {
-
+  
   # Compute the weight of reference
   w.ref <- NULL
   w.len <- length(w)
@@ -68,26 +63,3 @@ moving_diff <- function(x, ti, l=3) {
   # Return the output
   return(tmp) 
 }
-
-
-# Computes of CO2 cumulation and CO2 flow rate at each time t
-data_phenot %<>%
-  group_by(robot_id) %>%
-  arrange(robot_id, time) %>%
-  mutate(co2_cumul = weight_to_cumul(w = weight_loss, start = 2, t.ref = c(2,3), 
-                                     vol = 15.2),
-         co2_flowrate_3p = moving_diff(x = co2_cumul, ti = time, l = 3)) %>%
-  ungroup()
-
-
-# Extracts statistiques from the CO2 cumulation (g) and CO2 flow rate (g/h)
-data_phenot_parms <- data_phenot %>%
-  group_by(robot_id) %>%
-  summarise(date_start = min(date_hour), # Moment of the first mesure
-            date_end = max(date_hour), # Moment of the last measure
-            co2max = max(co2_cumul), # Maximum cumulated CO2
-            vmax = max(co2_flowrate_3p), # Maximum CO2 flow rate
-            tvmax = time[which(co2_flowrate_3p == max(co2_flowrate_3p))], # Time at the maximum CO2 flow rate
-            t1g = time[min(which(co2_cumul > 1))]) %>% # Latency : time at which cumulated CO2 reaches 1 for the first time
-  ungroup() %>%
-  mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)])
