@@ -20,7 +20,10 @@ plot_background = "white"
 plot_resolution = 300
 plot_ext = "png"
 
-
+strain_types_cols <- c(Bioreal = "red",
+                       Hirondelle = "green",
+                       Instant = "blue",
+                       sourdough = "transparent")
 
 # CUSTOM FUNCTIONS ####
 
@@ -34,4 +37,17 @@ myggsave <- function(plot = last_plot(), filename, width = 6, height = 5,
   ggsave(plot = plot, filename = file, width = width, height = height, bg = bg, dpi = 300, device = device, ...)
   
 }
+
+## Add units to the parameters name
+add_units <- function(column) {
+  
+  tmp <- case_when(column == "co2max" ~ paste(column, "(g)"),
+                   column == "vmax" ~ paste(column, "(g/h)"),
+                   column == "tvmax" ~ paste(column, "(h)"),
+                   column == "lag" ~ paste(column, "(h)"),
+                   TRUE ~ column)
+  
+  return(tmp)
+}
+
 

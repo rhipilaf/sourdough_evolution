@@ -2,13 +2,15 @@
 
 ## Phénotypage au robot
 
+Comme dans Bigey et al. (2021)
+
 Mesure au cours du temps (entre 26 et 28 heures) toutes les 51 minutes, de la masse d'un milieu synthétique contenant *Saccharomyces cerevisiae* qui y fermente. La transformation des sucres en CO<sub>2</sub> entraine une perte de poids qui est un proxy de la production de CO<sub>2</sub> cumulée à chaque temps $t$ (avec $t_{max} \in [32,34]$).
 
 Barboteur sur le dessus, donc pas de contamination possible, et pas d'entrée de matière, uniquement une sortie. Un tube ne peut que perdre de la matière.
 
-Composition du milieu ? Liquide/solide ? (cf. Bigey et al. 2021)
+Milieu liquide, composition cf. Bigey et al. (2021) <u>et Diego pour confirmation</u>.
 
-A $t_0$ et à $t_{32}$, comptage au cytomètre de flux le nombre de cellules.
+A $t_0$ et à $t_{27}$, comptage au cytomètre de flux le nombre de cellules.
 
 ### Limites du protocole
 

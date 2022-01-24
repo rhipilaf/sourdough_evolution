@@ -1,7 +1,8 @@
 
 
 # Weight loss trends ####
-ggplot(data_phenot) +
+data_phenot %>%
+  ggplot(.) +
   aes(x = time, y = weight_loss, group = robot_id) +
   geom_point(shape = ".") +
   geom_line(alpha = 0.3) +
@@ -29,18 +30,9 @@ myggsave(filename = "output/data_phenot_overview_co2_flowrate", width = 8, heigh
 
 # Estimated parameters (raw data, including outliers) ####
 
-## Formatting data ####
-data_phenot_parms_tidy <- data_phenot_parms %>%
-  mutate(bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)]) %>%
-  pivot_longer(cols = c("co2max", "vmax", "tvmax", "t1g"),
-               names_to = "parameter", values_to = "value") %>%
-  mutate(parameter = case_when(parameter == "co2max" ~ paste(parameter, "(g)"),
-                               parameter == "vmax" ~ paste(parameter, "(g/h)"),
-                               parameter == "tvmax" ~ paste(parameter, "(h)"),
-                               parameter == "t1g" ~ paste(parameter, "(h)")))
-
 ## Global distribution of parameters ####
-data_phenot_parms_tidy %>%
+data_phenot_parms %>%
+  mutate(parameter = add_units(parameter)) %>%
   ggplot(.) +
   aes(x = value) +
   geom_density(fill = alpha("red", 0.5)) +
@@ -49,7 +41,8 @@ data_phenot_parms_tidy %>%
 myggsave(filename = "output/global_distrib_parms", width = 6, height = 5)
 
 ## Intra-strain variance ####
-data_phenot_parms_tidy %>%
+data_phenot_parms %>%
+  mutate(parameter = add_units(parameter)) %>%
   ggplot(.) + 
   aes(y = value, group = strain_name, x = strain_name) +
   geom_point(alpha = 0.3) +
@@ -60,7 +53,8 @@ data_phenot_parms_tidy %>%
 myggsave(filename = "output/intra_strain_var", width = 6, height = 5)
 
 ## Intra strain variance distribution ####
-data_phenot_parms_tidy %>%
+data_phenot_parms %>%
+  mutate(parameter = add_units(parameter)) %>%
   group_by(strain_name, parameter) %>%
   summarise(strain_var = var(value)) %>%
   ggplot(., aes(x = strain_var)) +
@@ -72,27 +66,23 @@ myggsave(filename = "output/intra_strain_var_distrib", width = 6, height = 5)
 
 # Estimated parameters (clean data, without outliers) ####
 
-## Formatting data ####
-data_phenot_parms_clean_tidy <- data_phenot_parms_clean %>%
-  mutate(bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)]) %>%
-  pivot_longer(cols = c("co2max", "vmax", "tvmax", "t1g"),
-               names_to = "parameter", values_to = "value") %>%
-  mutate(parameter = case_when(parameter == "co2max" ~ paste(parameter, "(g)"),
-                               parameter == "vmax" ~ paste(parameter, "(g/h)"),
-                               parameter == "tvmax" ~ paste(parameter, "(h)"),
-                               parameter == "t1g" ~ paste(parameter, "(h)")))
-
 ## Global distribution of parameters ####
-data_phenot_parms_clean_tidy %>%
+data_phenot_parms_clean %>%
+  mutate(parameter = add_units(parameter),
+         strain_type = strains$strain_type[match(strain_name, strains$strain_name)]) %>%
   ggplot(.) +
   aes(x = value) +
   geom_density(fill = alpha("red", 0.5)) +
+  geom_vline(aes(xintercept = value, color = strain_type)) +
+  scale_color_manual(values = strain_types_cols) +
   facet_wrap(~parameter, scales = "free") +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = c(0.7,0.1), axis.text.x = element_text(angle = 90))
 myggsave(filename = "output/global_distrib_parms_clean", width = 6, height = 5)
 
 ## Intra-strain variance ####
-data_phenot_parms_clean_tidy %>%
+data_phenot_parms_clean %>%
+  mutate(parameter = add_units(parameter)) %>%
   ggplot(.) + 
   aes(y = value, group = strain_name, x = strain_name) +
   geom_point(alpha = 0.3) +
@@ -103,7 +93,8 @@ data_phenot_parms_clean_tidy %>%
 myggsave(filename = "output/intra_strain_var_clean", width = 6, height = 5)
 
 ## Intra strain variance distribution ####
-data_phenot_parms_clean_tidy %>%
+data_phenot_parms_clean %>%
+  mutate(parameter = add_units(parameter)) %>%
   group_by(strain_name, parameter) %>%
   summarise(strain_var = var(value)) %>%
   ggplot(., aes(x = strain_var)) +
@@ -112,18 +103,22 @@ data_phenot_parms_clean_tidy %>%
   theme_minimal()
 myggsave(filename = "output/intra_strain_var_distrib_clean", width = 6, height = 5)
 
-# Block effect ####
-data_phenot_parms_clean_tidy %>%
-  ggplot(.) +
-  aes(y = value, fill = bloc) +
-  geom_boxplot(alpha = 0.3) +
-  facet_wrap(~parameter, scales = "free") +
+# Inoculation effect ####
+data_phenot_parms_clean %>%
+  filter(parameter %in% c("lag","cell_t0")) %>%
+  select(robot_id, parameter, value) %>% 
+  unique() %>%
+  pivot_wider(names_from = parameter, values_from = value) %>%
+  ggplot(aes(y = lag, x = cell_t0)) +
+  geom_point() +
   theme_minimal()
 
-bloc_effect_model <- data_phenot_parms_clean_tidy %>% 
-  group_by(parameter) %>%
-  summarise(p.value = anova(lm(value ~ bloc))$'Pr(>F)'[1])
+# Flour effect
+data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0") %>%
+  mutate(flour_type = )
+  ggplot()
 
+# Baker effect
 
-# Inoculation effect ####
-plot(t1g ~ cell_t0, data_phenot_parms_clean)
+# Backslopping effect
