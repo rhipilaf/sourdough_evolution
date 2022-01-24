@@ -112,13 +112,77 @@ data_phenot_parms_clean %>%
   ggplot(aes(y = lag, x = cell_t0)) +
   geom_point() +
   theme_minimal()
+myggsave(filename = "output/effects_inoculation", width = 6, height = 5)
+
 
 # Flour effect
 data_phenot_parms_clean %>%
   filter(parameter != "cell_t0") %>%
-  mutate(flour_type = )
-  ggplot()
+  mutate(flour_id = strains$flour_id[match(strain_name, strains$strain_name)], 
+         flour_type = flours$mill_type[match(flour_id, flours$flour_id)]) %>%
+  filter(!is.na(flour_type)) %>%
+  ggplot() +
+  aes(x = flour_type, y = value) +
+  geom_boxplot() +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+myggsave(filename = "output/effects_flour", width = 7, height = 6)
+
 
 # Baker effect
+data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0") %>%
+  mutate(baker_id = strains$baker_id[match(strain_name, strains$strain_name)],
+         strain_type = strains$strain_type[match(strain_name, strains$strain_name)]) %>%
+  filter(!is.na(baker_id)) %>%
+  ggplot() +
+  aes(x = baker_id, y = value) +
+  geom_boxplot() +
+  geom_point(aes(color = strain_type)) +
+  scale_color_manual(values = strain_types_cols) +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+myggsave(filename = "output/effects_baker", width = 7, height = 6)
+
 
 # Backslopping effect
+data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0") %>%
+  mutate(backslopping = strains$backslopping[match(strain_name, strains$strain_name)]) %>%
+  filter(!is.na(backslopping)) %>%
+  ggplot() +
+  aes(x = backslopping, y = value) +
+  geom_boxplot() +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+myggsave(filename = "output/effects_backslopping", width = 7, height = 6)
+
+# Block effect
+data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0") %>%
+  ggplot() +
+  aes(x = bloc_month , y = value) +
+  geom_boxplot() +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+myggsave(filename = "output/effects_block_month", width = 7, height = 6)
+
+
+strains_in_both <- data_phenot_parms_clean %>%
+  select(strain_name, bloc_month) %>%
+  unique() %>%
+  group_by(strain_name) %>%
+  summarise(n = n()) %>%
+  filter(n > 1) %>%
+  select(strain_name) %>% 
+  flatten_chr()
+
+data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0",
+         strain_name %in% strains_in_both) %>%
+  ggplot() +
+  aes(x = bloc_month , y = value) +
+  geom_boxplot() +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+myggsave(filename = "output/effects_block_month", width = 7, height = 6)

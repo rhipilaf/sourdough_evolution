@@ -1,7 +1,8 @@
 
 # METADATA
 
-strains <- readxl::read_xlsx("data/strains.xlsx")
+strains <- readxl::read_xlsx("data/strains.xlsx") %>%
+  mutate(backslopping = factor(backslopping, levels = c("T1", "T5", "T32")))
 bakers <- readxl::read_xlsx("data/bakers.xlsx")
 flours <- readxl::read_xlsx("data/flours.xlsx")
 
