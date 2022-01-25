@@ -12,22 +12,26 @@ library(broom)
 ## Set working directory. Set here the path of the root of the project
 setwd("C:/Users/guillert/Desktop/Projets/sourdough_evolution/")
 
-## Growth parameter estimation (std, nls, bayes)
-growth_est_mthd = "nls"
+## Growth parameter estimation method (std, nls, bayes)
+growth_est_mthd = "nls" # parameter not used yet
 
-## Figure output configuration ####
+
+# FIGURE OUTPUT SETTINGS ####
+
 plot_background = "white"
 plot_resolution = 300
 plot_ext = "png"
 
-strain_types_cols <- c(Bioreal = "red",
-                       Hirondelle = "green",
-                       Instant = "blue",
-                       sourdough = "transparent")
+## Colors ####
+strain_types_cols <- c(Bioreal = alpha("red", 0.7),
+                       Hirondelle = alpha("green", 0.7),
+                       Instant = alpha("blue", 0.7),
+                       sourdough = ("transparent"))
+
 
 # CUSTOM FUNCTIONS ####
 
-## Custom function to save ggplots with custom default parameters defined above
+## Custom function to save ggplots with custom default parameters defined above ####
 myggsave <- function(plot = last_plot(), filename, width = 6, height = 5, 
                      bg = plot_background, 
                      dpi = plot_resolution, 
@@ -38,7 +42,7 @@ myggsave <- function(plot = last_plot(), filename, width = 6, height = 5,
   
 }
 
-## Add units to the parameters name
+## Add units to the parameters name ####
 add_units <- function(column) {
   
   tmp <- case_when(column == "co2max" ~ paste(column, "(g)"),

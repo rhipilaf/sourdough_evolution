@@ -103,19 +103,22 @@ data_phenot_parms_clean %>%
   theme_minimal()
 myggsave(filename = "output/intra_strain_var_distrib_clean", width = 6, height = 5)
 
-# Inoculation effect ####
+# Effects ####
+## Inoculation effect ####
 data_phenot_parms_clean %>%
-  filter(parameter %in% c("lag","cell_t0")) %>%
+  filter(parameter %in% c("lag","tvmax","cell_t0")) %>%
   select(robot_id, parameter, value) %>% 
   unique() %>%
   pivot_wider(names_from = parameter, values_from = value) %>%
-  ggplot(aes(y = lag, x = cell_t0)) +
+  pivot_longer(cols = c("lag","tvmax"), names_to = "parameter", values_to = "value") %>%
+  ggplot(aes(y = value, x = cell_t0)) +
+  facet_wrap(~ parameter, scales = "free") +
   geom_point() +
   theme_minimal()
 myggsave(filename = "output/effects_inoculation", width = 6, height = 5)
 
 
-# Flour effect
+## Flour type effect ####
 data_phenot_parms_clean %>%
   filter(parameter != "cell_t0") %>%
   mutate(flour_id = strains$flour_id[match(strain_name, strains$strain_name)], 
@@ -129,7 +132,21 @@ data_phenot_parms_clean %>%
 myggsave(filename = "output/effects_flour", width = 7, height = 6)
 
 
-# Baker effect
+## Wheat type effect ####
+data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0") %>%
+  mutate(flour_id = strains$flour_id[match(strain_name, strains$strain_name)], 
+         wheat_type = flours$wheat_type[match(flour_id, flours$flour_id)]) %>%
+  filter(!is.na(wheat_type)) %>%
+  ggplot() +
+  aes(x = wheat_type, y = value) +
+  geom_boxplot() +
+  facet_wrap(~parameter, scales = "free") +
+  theme_minimal()
+myggsave(filename = "output/effects_wheat", width = 7, height = 6)
+
+
+## Baker effect ####
 data_phenot_parms_clean %>%
   filter(parameter != "cell_t0") %>%
   mutate(baker_id = strains$baker_id[match(strain_name, strains$strain_name)],
@@ -145,7 +162,7 @@ data_phenot_parms_clean %>%
 myggsave(filename = "output/effects_baker", width = 7, height = 6)
 
 
-# Backslopping effect
+## Backslopping effect ####
 data_phenot_parms_clean %>%
   filter(parameter != "cell_t0") %>%
   mutate(backslopping = strains$backslopping[match(strain_name, strains$strain_name)]) %>%
@@ -157,7 +174,7 @@ data_phenot_parms_clean %>%
   theme_minimal()
 myggsave(filename = "output/effects_backslopping", width = 7, height = 6)
 
-# Block effect
+## Block effect ####
 data_phenot_parms_clean %>%
   filter(parameter != "cell_t0") %>%
   ggplot() +
@@ -185,4 +202,4 @@ data_phenot_parms_clean %>%
   geom_boxplot() +
   facet_wrap(~parameter, scales = "free") +
   theme_minimal()
-myggsave(filename = "output/effects_block_month", width = 7, height = 6)
+myggsave(filename = "output/effects_block_month_onlyshared", width = 7, height = 6)

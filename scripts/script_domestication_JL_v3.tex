@@ -1,0 +1,1103 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\title{script\_domestication\_JL}
+\author{}
+\date{\vspace{-2.5em}}
+
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={script\_domestication\_JL},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\maketitle
+
+Plan d'expérience: très déséquilibré sur les bloc selon habitat.
+
+\begin{verbatim}
+##            Habitat
+## Species     Other Sourdough
+##   K_bulderi    12        45
+##   K_humilis    10        46
+\end{verbatim}
+
+\begin{verbatim}
+## 
+##   B10_20F    B10_32    B10_8F    B12_19     B12_5     B12_7    B15_23    B15_29 
+##         3         3         3         3         1         6         4         2 
+##     B15_7     B17_1    B17_25     B17_7   B2_AC10     B20_1    B20_18    B20_20 
+##         1         1         3         2         3         3         2         3 
+##    B21_24    B21_29     B21_6      B4_1     B4_12     B4_13      B5_1     B5_13 
+##         2         2         5         4         5         2         2         3 
+##     B5_20     B6_15      B6_2      B6_3      B7_1     B7_10      B7_2   CBS7754 
+##         8         5         2         1         2         3         2         3 
+## CLIB_1323   CLIB604 MUCL38021 MUCL54694  NCYC2450   Y-27205 
+##         4         3         3         3         3         3
+\end{verbatim}
+
+\begin{verbatim}
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\hypertarget{analyse-trait-par-trait}{%
+\subsection{Analyse trait par trait}\label{analyse-trait-par-trait}}
+
+On boucle sur les traits. On commence par tester sur chaque habitat
+l'effet bloc. Puis modèle complet. Regarder si on fait le modèle sur
+l'échelle log à partir des résidus.
+
+\hypertarget{estimation-des-effets-blocs-avec-un-modele-par-milieu}{%
+\subsection{1. Estimation des effets blocs avec un modele par
+milieu}\label{estimation-des-effets-blocs-avec-un-modele-par-milieu}}
+
+On estime l'effet bloc uniquement avec le Sourdough.
+
+\begin{verbatim}
+## ### tVmax ###
+## [1] "Sourdough"
+##                       (Intercept)
+## Convergence            0.09110161
+## Diversitéphénotypique -0.09110161
+##                       (Intercept)
+## Convergence            0.03431141
+## Diversitéphénotypique -0.03431141
+## ### Vmax ###
+## [1] "Sourdough"
+##                       (Intercept)
+## Convergence           -0.09879861
+## Diversitéphénotypique  0.09879861
+##                       (Intercept)
+## Convergence               -1.2838
+## Diversitéphénotypique      1.2838
+## ### CO2max ###
+\end{verbatim}
+
+\begin{verbatim}
+## boundary (singular) fit: see ?isSingular
+\end{verbatim}
+
+\begin{verbatim}
+## [1] "Sourdough"
+##                       (Intercept)
+## Convergence            0.01757289
+## Diversitéphénotypique -0.01757289
+##                        (Intercept)
+## Convergence            0.009410757
+## Diversitéphénotypique -0.009410757
+## ### Cellt27 ###
+## [1] "Sourdough"
+##                       (Intercept)
+## Convergence            -0.5230016
+## Diversitéphénotypique   0.5230016
+##                       (Intercept)
+## Convergence           -0.02700593
+## Diversitéphénotypique  0.02700593
+## ### Mortality ###
+## [1] "Sourdough"
+##                       (Intercept)
+## Convergence             0.0211201
+## Diversitéphénotypique  -0.0211201
+##                       (Intercept)
+## Convergence           -0.00610772
+## Diversitéphénotypique  0.00610772
+## ### t1g ###
+## [1] "Sourdough"
+##                       (Intercept)
+## Convergence            0.03309889
+## Diversitéphénotypique -0.03309889
+##                       (Intercept)
+## Convergence            0.01395152
+## Diversitéphénotypique -0.01395152
+\end{verbatim}
+
+\hypertarget{moduxe8le-complet}{%
+\subsection{2. Modèle complet}\label{moduxe8le-complet}}
+
+On travaille sur l'echelle log (résidus mieux pour certaines variables +
+interprétation est la même pour tous : on estime un rapport). On estime
+l'effet bloc pour le comparer à celui qu'on a estimé en 1.
+
+\begin{verbatim}
+## ### tVmax ###
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+## [1] "résidus log tVmax"
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-1.pdf}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.3244621
+## 
+## $rect$h
+## [1] 0.1287932
+## 
+## $rect$left
+## [1] 2.209256
+## 
+## $rect$top
+## [1] 0.1562925
+## 
+## 
+## $text
+## $text$x
+## [1] 2.258944 2.258944 2.258944 2.258944
+## 
+## $text$y
+## [1] 0.13053385 0.10477521 0.07901657 0.05325793
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-2.pdf}
+
+\begin{verbatim}
+## $breaks
+##  [1] -3.0 -2.5 -2.0 -1.5 -1.0 -0.5  0.0  0.5  1.0  1.5  2.0  2.5
+## 
+## $counts
+##  [1]  1  1  5  4 19 20 34 18  8  2  1
+## 
+## $density
+##  [1] 0.01769912 0.01769912 0.08849558 0.07079646 0.33628319 0.35398230
+##  [7] 0.60176991 0.31858407 0.14159292 0.03539823 0.01769912
+## 
+## $mids
+##  [1] -2.75 -2.25 -1.75 -1.25 -0.75 -0.25  0.25  0.75  1.25  1.75  2.25
+## 
+## $xname
+## [1] "summary(LMER0)$residuals"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
+## ### Vmax ###
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+## [1] "résidus log Vmax"
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-3.pdf}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.2999067
+## 
+## $rect$h
+## [1] 0.2122458
+## 
+## $rect$left
+## [1] -0.3156957
+## 
+## $rect$top
+## [1] 0.3035679
+## 
+## 
+## $text
+## $text$x
+## [1] -0.2697682 -0.2697682 -0.2697682 -0.2697682
+## 
+## $text$y
+## [1] 0.2611187 0.2186696 0.1762204 0.1337713
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-4.pdf}
+
+\begin{verbatim}
+## $breaks
+##  [1] -2.5 -2.0 -1.5 -1.0 -0.5  0.0  0.5  1.0  1.5  2.0  2.5  3.0
+## 
+## $counts
+##  [1]  1  2  8 18 31 26 14  9  1  2  1
+## 
+## $density
+##  [1] 0.01769912 0.03539823 0.14159292 0.31858407 0.54867257 0.46017699
+##  [7] 0.24778761 0.15929204 0.01769912 0.03539823 0.01769912
+## 
+## $mids
+##  [1] -2.25 -1.75 -1.25 -0.75 -0.25  0.25  0.75  1.25  1.75  2.25  2.75
+## 
+## $xname
+## [1] "summary(LMER0)$residuals"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
+## ### CO2max ###
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+## [1] "résidus log CO2max"
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-5.pdf}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.03220184
+## 
+## $rect$h
+## [1] 0.1451266
+## 
+## $rect$left
+## [1] 1.840101
+## 
+## $rect$top
+## [1] 0.2086908
+## 
+## 
+## $text
+## $text$x
+## [1] 1.845033 1.845033 1.845033 1.845033
+## 
+## $text$y
+## [1] 0.17966549 0.15064016 0.12161484 0.09258952
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-6.pdf}
+
+\begin{verbatim}
+## $breaks
+## [1] -3 -2 -1  0  1  2  3  4
+## 
+## $counts
+## [1]  4  8 50 35 13  2  1
+## 
+## $density
+## [1] 0.035398230 0.070796460 0.442477876 0.309734513 0.115044248 0.017699115
+## [7] 0.008849558
+## 
+## $mids
+## [1] -2.5 -1.5 -0.5  0.5  1.5  2.5  3.5
+## 
+## $xname
+## [1] "summary(LMER0)$residuals"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
+## ### Cellt27 ###
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+## [1] "résidus log Cellt27"
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-7.pdf}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.7983545
+## 
+## $rect$h
+## [1] 0.7091989
+## 
+## $rect$left
+## [1] 17.91361
+## 
+## $rect$top
+## [1] 0.5337799
+## 
+## 
+## $text
+## $text$x
+## [1] 18.03587 18.03587 18.03587 18.03587
+## 
+## $text$y
+## [1]  0.3919401  0.2501004  0.1082606 -0.0335792
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-8.pdf}
+
+\begin{verbatim}
+## $breaks
+##  [1] -4.5 -4.0 -3.5 -3.0 -2.5 -2.0 -1.5 -1.0 -0.5  0.0  0.5  1.0  1.5
+## 
+## $counts
+##  [1]  1  1  2  2  0  0  0  7 30 47 18  5
+## 
+## $density
+##  [1] 0.01769912 0.01769912 0.03539823 0.03539823 0.00000000 0.00000000
+##  [7] 0.00000000 0.12389381 0.53097345 0.83185841 0.31858407 0.08849558
+## 
+## $mids
+##  [1] -4.25 -3.75 -3.25 -2.75 -2.25 -1.75 -1.25 -0.75 -0.25  0.25  0.75  1.25
+## 
+## $xname
+## [1] "summary(LMER0)$residuals"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
+## ### Mortality ###
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+## [1] "résidus log Mortality"
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-9.pdf}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.2654079
+## 
+## $rect$h
+## [1] 0.8544428
+## 
+## $rect$left
+## [1] -3.568774
+## 
+## $rect$top
+## [1] 1.120584
+## 
+## 
+## $text
+## $text$x
+## [1] -3.528129 -3.528129 -3.528129 -3.528129
+## 
+## $text$y
+## [1] 0.9496957 0.7788071 0.6079186 0.4370300
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-10.pdf}
+
+\begin{verbatim}
+## $breaks
+##  [1] -2.5 -2.0 -1.5 -1.0 -0.5  0.0  0.5  1.0  1.5  2.0  2.5
+## 
+## $counts
+##  [1]  5  4  7 16 25 18 19 15  2  2
+## 
+## $density
+##  [1] 0.08849558 0.07079646 0.12389381 0.28318584 0.44247788 0.31858407
+##  [7] 0.33628319 0.26548673 0.03539823 0.03539823
+## 
+## $mids
+##  [1] -2.25 -1.75 -1.25 -0.75 -0.25  0.25  0.75  1.25  1.75  2.25
+## 
+## $xname
+## [1] "summary(LMER0)$residuals"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
+## ### t1g ###
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+## [1] "résidus log t1g"
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-11.pdf}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.2574894
+## 
+## $rect$h
+## [1] 0.2175292
+## 
+## $rect$left
+## [1] 1.922368
+## 
+## $rect$top
+## [1] 0.2212572
+## 
+## 
+## $text
+## $text$x
+## [1] 1.9618 1.9618 1.9618 1.9618
+## 
+## $text$y
+## [1] 0.17775140 0.13424556 0.09073972 0.04723389
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet log-12.pdf}
+
+\begin{verbatim}
+## $breaks
+## [1] -4 -3 -2 -1  0  1  2  3
+## 
+## $counts
+## [1]  1  2  9 42 48 10  1
+## 
+## $density
+## [1] 0.008849558 0.017699115 0.079646018 0.371681416 0.424778761 0.088495575
+## [7] 0.008849558
+## 
+## $mids
+## [1] -3.5 -2.5 -1.5 -0.5  0.5  1.5  2.5
+## 
+## $xname
+## [1] "summary(LMER0)$residuals"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
+\end{verbatim}
+
+\hypertarget{estimation-de-leffet-bloc-en-effet-fixe}{%
+\subsection{3. Estimation de l'effet bloc en effet
+fixe}\label{estimation-de-leffet-bloc-en-effet-fixe}}
+
+Avec seulement les souches présentes dans les deux blocs On teste
+l'interaction, puis on estime l'effet dans le modèle additif si pas
+d'interaction
+
+\begin{verbatim}
+## [1] "############"
+## [1] "tVmax"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other               3                     1
+##   Sourdough          22                    14
+## Analysis of Variance Table
+## 
+## Response: logtrait
+##              Df  Sum Sq Mean Sq  F value    Pr(>F)    
+## Strain        7 1.44702 0.20672  75.4835 8.593e-15 ***
+## Block         1 0.36631 0.36631 133.7579 2.672e-11 ***
+## Strain:Block  7 0.04517 0.00645   2.3565   0.05544 .  
+## Residuals    24 0.06573 0.00274                       
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## [1] "############"
+## [1] "Vmax"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other               3                     1
+##   Sourdough          22                    14
+## Analysis of Variance Table
+## 
+## Response: logtrait
+##              Df  Sum Sq Mean Sq F value    Pr(>F)    
+## Strain        7 1.20470 0.17210 19.2223 2.089e-08 ***
+## Block         1 0.41081 0.41081 45.8841 5.252e-07 ***
+## Strain:Block  7 0.08320 0.01189  1.3275    0.2805    
+## Residuals    24 0.21487 0.00895                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## [1] "############"
+## [1] "CO2max"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other               3                     1
+##   Sourdough          22                    14
+## Analysis of Variance Table
+## 
+## Response: logtrait
+##              Df   Sum Sq   Mean Sq F value  Pr(>F)  
+## Strain        7 0.063926 0.0091323  3.3837 0.01176 *
+## Block         1 0.006909 0.0069088  2.5598 0.12269  
+## Strain:Block  7 0.017896 0.0025565  0.9472 0.48997  
+## Residuals    24 0.064774 0.0026989                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## [1] "############"
+## [1] "Cellt27"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other               3                     1
+##   Sourdough          22                    14
+## Analysis of Variance Table
+## 
+## Response: logtrait
+##              Df  Sum Sq Mean Sq   F value  Pr(>F)    
+## Strain        7  7.6667  1.0952  224.5808 < 2e-16 ***
+## Block         1 10.6842 10.6842 2190.8159 < 2e-16 ***
+## Strain:Block  7  0.0733  0.0105    2.1475 0.07702 .  
+## Residuals    24  0.1170  0.0049                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## [1] "############"
+## [1] "Mortality"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other               3                     1
+##   Sourdough          22                    14
+## Analysis of Variance Table
+## 
+## Response: logtrait
+##              Df Sum Sq Mean Sq F value   Pr(>F)   
+## Strain        7 4.2785 0.61122  5.0740 0.001219 **
+## Block         1 0.2220 0.22195  1.8425 0.187283   
+## Strain:Block  7 1.8730 0.26757  2.2212 0.068569 . 
+## Residuals    24 2.8911 0.12046                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## [1] "############"
+## [1] "t1g"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other               3                     1
+##   Sourdough          22                    14
+## Analysis of Variance Table
+## 
+## Response: logtrait
+##              Df  Sum Sq  Mean Sq F value    Pr(>F)    
+## Strain        7 0.79592 0.113702 22.5547 4.237e-09 ***
+## Block         1 0.03395 0.033948  6.7342   0.01588 *  
+## Strain:Block  7 0.02886 0.004123  0.8179   0.58177    
+## Residuals    24 0.12099 0.005041                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\hypertarget{moduxe8le-complet-sur-echelle-log}{%
+\subsection{3. Modèle complet sur echelle
+log}\label{moduxe8le-complet-sur-echelle-log}}
+
+on retire au préalable l'effet bloc On estime l'effet milieu pour chaque
+espèce. On stocke estimation et IC
+
+\begin{verbatim}
+## [1] "############"
+## [1] "tVmax"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.703464
+## 
+## $rect$h
+## [1] 0.06875937
+## 
+## $rect$left
+## [1] 2.317617
+## 
+## $rect$top
+## [1] 0.1563019
+## 
+## 
+## $text
+## $text$x
+## [1] 2.424472 2.424472 2.424472 2.424472
+## 
+## $text$y
+## [1] 0.1425500 0.1287981 0.1150463 0.1012944
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet inference-1.pdf}
+
+\begin{verbatim}
+## $stats
+##             [,1]        [,2]        [,3]         [,4]
+## [1,] -0.06471837 -0.11403693 -0.17747533 -0.060690687
+## [2,] -0.04189507 -0.07136678 -0.14541879 -0.033089786
+## [3,] -0.01390935 -0.03580059 -0.11336226 -0.005019025
+## [4,]  0.04189507  0.03255684  0.08873766  0.031839337
+## [5,]  0.09253706  0.06809869  0.29083758  0.070794412
+## 
+## $n
+## [1]  4 15  3 16
+## 
+## $conf
+##             [,1]         [,2]       [,3]        [,4]
+## [1,] -0.08010355 -0.078196667 -0.3269629 -0.03066603
+## [2,]  0.05228486  0.006595493  0.1002384  0.02062798
+## 
+## $out
+## [1] 0.355454
+## 
+## $group
+## [1] 2
+## 
+## $names
+## [1] "Other.K_bulderi"     "Sourdough.K_bulderi" "Other.K_humilis"    
+## [4] "Sourdough.K_humilis"
+## 
+##     Habitat   Species        Ranef0
+## 1     Other K_bulderi -6.305633e-14
+## 2 Sourdough K_bulderi -1.667175e-14
+## 3     Other K_humilis -1.236973e-14
+## 4 Sourdough K_humilis  4.634693e-15
+## [1] "############"
+## [1] "Vmax"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.6867739
+## 
+## $rect$h
+## [1] 0.1128016
+## 
+## $rect$left
+## [1] -0.332713
+## 
+## $rect$top
+## [1] 0.3003001
+## 
+## 
+## $text
+## $text$x
+## [1] -0.228393 -0.228393 -0.228393 -0.228393
+## 
+## $text$y
+## [1] 0.2777398 0.2551795 0.2326192 0.2100588
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet inference-2.pdf}
+
+\begin{verbatim}
+## $stats
+##             [,1]        [,2]        [,3]          [,4]
+## [1,] -0.10878372 -0.08449661 -0.25224161 -0.0691569033
+## [2,] -0.05075134 -0.01687837 -0.06588764 -0.0134709158
+## [3,]  0.01082494  0.02861136  0.12046633 -0.0005985306
+## [4,]  0.05075134  0.08019726  0.12612080  0.0369385746
+## [5,]  0.08713385  0.14605489  0.13177528  0.1058509672
+## 
+## $n
+## [1]  4 15  3 16
+## 
+## $conf
+##             [,1]        [,2]        [,3]        [,4]
+## [1,] -0.06936218 -0.01099106 -0.05468635 -0.02051028
+## [2,]  0.09101206  0.06821377  0.29561901  0.01931322
+## 
+## $out
+## [1] -0.3766919 -0.1844557 -0.1124372 -0.1179186
+## 
+## $group
+## [1] 2 2 4 4
+## 
+## $names
+## [1] "Other.K_bulderi"     "Sourdough.K_bulderi" "Other.K_humilis"    
+## [4] "Sourdough.K_humilis"
+## 
+##     Habitat   Species        Ranef0
+## 1     Other K_bulderi -5.370921e-15
+## 2 Sourdough K_bulderi  5.882931e-16
+## 3     Other K_humilis -4.440892e-16
+## 4 Sourdough K_humilis -2.290377e-17
+## [1] "############"
+## [1] "CO2max"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.05141595
+## 
+## $rect$h
+## [1] 0.07780925
+## 
+## $rect$left
+## [1] 1.857352
+## 
+## $rect$top
+## [1] 0.2088063
+## 
+## 
+## $text
+## $text$x
+## [1] 1.865162 1.865162 1.865162 1.865162
+## 
+## $text$y
+## [1] 0.1932445 0.1776826 0.1621208 0.1465589
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet inference-3.pdf}
+
+\begin{verbatim}
+## $stats
+##              [,1]          [,2]         [,3]          [,4]
+## [1,] -0.001708351 -0.0030545297 -0.011191429 -0.0015232166
+## [2,] -0.001487400 -0.0006989560 -0.003737143 -0.0008095134
+## [3,] -0.001057422  0.0001393986  0.003717142 -0.0004197584
+## [4,]  0.001487400  0.0017982632  0.005595714  0.0004191550
+## [5,]  0.003823194  0.0039747040  0.007474286  0.0015536459
+## 
+## $n
+## [1]  4 15  3 16
+## 
+## $conf
+##              [,1]          [,2]         [,3]          [,4]
+## [1,] -0.003407513 -0.0008793526 -0.004796416 -9.050824e-04
+## [2,]  0.001292670  0.0011581498  0.012230700  6.556562e-05
+## 
+## $out
+## [1] -0.006351062 -0.005932429  0.003856550
+## 
+## $group
+## [1] 2 2 4
+## 
+## $names
+## [1] "Other.K_bulderi"     "Sourdough.K_bulderi" "Other.K_humilis"    
+## [4] "Sourdough.K_humilis"
+## 
+##     Habitat   Species        Ranef0
+## 1     Other K_bulderi  4.178244e-16
+## 2 Sourdough K_bulderi -1.803562e-17
+## 3     Other K_humilis  6.071532e-18
+## 4 Sourdough K_humilis  1.484722e-17
+## [1] "############"
+## [1] "Cellt27"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 1.171269
+## 
+## $rect$h
+## [1] 0.3770696
+## 
+## $rect$left
+## [1] 18.27076
+## 
+## $rect$top
+## [1] 0.529227
+## 
+## 
+## $text
+## $text$x
+## [1] 18.44868 18.44868 18.44868 18.44868
+## 
+## $text$y
+## [1] 0.4538130 0.3783991 0.3029852 0.2275713
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet inference-4.pdf}
+
+\begin{verbatim}
+## $stats
+##              [,1]       [,2]        [,3]        [,4]
+## [1,] -0.035882623 0.01494437 -0.12355873 -0.22639649
+## [2,] -0.024899389 0.01623948 -0.05236716 -0.03999777
+## [3,] -0.006671694 0.02155267  0.01882441  0.01971459
+## [4,]  0.024899389 0.05208554  0.06177936  0.09075880
+## [5,]  0.049226010 0.08711769  0.10473432  0.13263432
+## 
+## $n
+## [1]  4 15  3 16
+## 
+## $conf
+##             [,1]        [,2]        [,3]        [,4]
+## [1,] -0.04601273 0.006929117 -0.08530159 -0.03193425
+## [2,]  0.03266934 0.036176222  0.12295040  0.07136343
+## 
+## $out
+## [1] -0.1353362 -0.2284081 -0.1167600 -0.2375134
+## 
+## $group
+## [1] 2 2 2 4
+## 
+## $names
+## [1] "Other.K_bulderi"     "Sourdough.K_bulderi" "Other.K_humilis"    
+## [4] "Sourdough.K_humilis"
+## 
+##     Habitat   Species        Ranef0
+## 1     Other K_bulderi -5.450667e-14
+## 2 Sourdough K_bulderi  3.739486e-15
+## 3     Other K_humilis  5.655199e-16
+## 4 Sourdough K_humilis  3.277787e-15
+## [1] "############"
+## [1] "Mortality"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.6249913
+## 
+## $rect$h
+## [1] 0.4610905
+## 
+## $rect$left
+## [1] -3.515458
+## 
+## $rect$top
+## [1] 1.15365
+## 
+## 
+## $text
+## $text$x
+## [1] -3.420523 -3.420523 -3.420523 -3.420523
+## 
+## $text$y
+## [1] 1.0614316 0.9692135 0.8769954 0.7847773
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet inference-5.pdf}
+
+\begin{verbatim}
+## $stats
+##              [,1]          [,2]         [,3]         [,4]
+## [1,] -0.026866900 -0.0421230297 -0.013211753 -0.055583824
+## [2,] -0.014447820 -0.0090373720 -0.003916286 -0.015222619
+## [3,]  0.005357871  0.0003414465  0.005379182  0.006393838
+## [4,]  0.014447820  0.0148793380  0.006605877  0.016095675
+## [5,]  0.016151158  0.0500387631  0.007832571  0.030890456
+## 
+## $n
+## [1]  4 15  3 16
+## 
+## $conf
+##             [,1]         [,2]         [,3]         [,4]
+## [1,] -0.01746968 -0.009415477 -0.004219276 -0.005976888
+## [2,]  0.02818543  0.010098370  0.014977640  0.018764565
+## 
+## $out
+## [1] -0.05407832
+## 
+## $group
+## [1] 2
+## 
+## $names
+## [1] "Other.K_bulderi"     "Sourdough.K_bulderi" "Other.K_humilis"    
+## [4] "Sourdough.K_humilis"
+## 
+##     Habitat   Species        Ranef0
+## 1     Other K_bulderi -2.824347e-16
+## 2 Sourdough K_bulderi  3.016307e-17
+## 3     Other K_humilis -4.276093e-16
+## 4 Sourdough K_humilis  5.545694e-17
+## [1] "############"
+## [1] "t1g"
+## [1] "############"
+## [1] "plan expérience"
+##            Block
+## Habitat     Convergence Diversitéphénotypique
+##   Other              21                     1
+##   Sourdough          25                    66
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+## $rect
+## $rect$w
+## [1] 0.6040513
+## 
+## $rect$h
+## [1] 0.1162327
+## 
+## $rect$left
+## [1] 1.956104
+## 
+## $rect$top
+## [1] 0.2214472
+## 
+## 
+## $text
+## $text$x
+## [1] 2.047859 2.047859 2.047859 2.047859
+## 
+## $text$y
+## [1] 0.1982006 0.1749541 0.1517076 0.1284610
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{script_domestication_JL_v3_files/figure-latex/modele complet inference-6.pdf}
+
+\begin{verbatim}
+## $stats
+##               [,1]          [,2]        [,3]         [,4]
+## [1,] -0.0341383824 -0.0670971655 -0.14793463 -0.099310407
+## [2,] -0.0176287966 -0.0253453001 -0.09893964 -0.020253409
+## [3,]  0.0003441671 -0.0001676327 -0.04994465  0.007052997
+## [4,]  0.0176287966  0.0282234666  0.07396731  0.035482427
+## [5,]  0.0334500481  0.0505211886  0.19787927  0.082267396
+## 
+## $n
+## [1]  4 15  3 16
+## 
+## $conf
+##             [,1]        [,2]       [,3]        [,4]
+## [1,] -0.02750933 -0.02202124 -0.2076727 -0.01496266
+## [2,]  0.02819767  0.02168597  0.1077834  0.02906865
+## 
+## $out
+## [1]  0.1624727 -0.1250036 -0.1259360
+## 
+## $group
+## [1] 2 2 4
+## 
+## $names
+## [1] "Other.K_bulderi"     "Sourdough.K_bulderi" "Other.K_humilis"    
+## [4] "Sourdough.K_humilis"
+## 
+##     Habitat   Species        Ranef0
+## 1     Other K_bulderi  2.386329e-15
+## 2 Sourdough K_bulderi -1.328695e-15
+## 3     Other K_humilis  8.169387e-15
+## 4 Sourdough K_humilis -1.135756e-15
+\end{verbatim}
+
+\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+\end{document}

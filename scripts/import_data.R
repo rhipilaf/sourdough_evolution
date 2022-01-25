@@ -36,7 +36,8 @@ source("scripts/data_phenot_get_parameters_std.R")
 excluded_replicates <- data_phenot_parms %>%
   filter(robot_id %in% robot_id[parameter == "co2max" & value < 20]) %>%
   select(robot_id) %>% 
-  mutate(reason = data_cyto$notes[match(robot_id, data_cyto$robot_id)]) %>%
+  mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)],
+         reason = data_cyto$notes[match(robot_id, data_cyto$robot_id)]) %>%
   unique()
 
 ## Excluding outlier replicates

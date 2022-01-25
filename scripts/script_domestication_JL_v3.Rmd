@@ -1,0 +1,287 @@
+---
+title: "script_domestication_JL"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = 'C:/Users/guillert/Desktop/Projets/sourdough_evolution/')
+
+rm(list=ls())
+library(lme4)
+library(lmerTest)
+library(doBy)
+library(multcomp)
+```
+
+
+```{r chargement}
+## On charge les données
+#PHENOTYPING ALL-------------------------------------------
+mydata <- read.table("data/data_robot/data_micheletal.csv", header=T, sep=";", fileEncoding = "UTF-8")
+
+#on retire la souche dont on ne connait pas l'environnement
+mydata<-mydata[mydata$Strain!="CBS7541",]
+
+# mydata$Experiment = as.factor(mydata$Experiment)
+mydata$Block = as.factor(mydata$Block)
+mydata$Strain = as.factor(mydata$Strain)
+# mydata$Genus = as.factor(mydata$Genus)
+mydata$Species = as.factor(mydata$Species)
+mydata$Habitat = as.factor(mydata$Habitat)
+# mydata$Sp_Hab = as.factor(mydata$Sp_Hab)
+# mydata$Control=as.factor(mydata$Control)
+# mydata$noterobot=as.factor(mydata$noterobot)
+```
+
+Plan d'expérience: très déséquilibré sur les bloc selon habitat.
+
+```{r plan experience}
+#plan d'expérience
+table(mydata[,c("Species","Habitat")])
+table(mydata$Strain)
+table(mydata[,c("Habitat","Block")])
+head(mydata)
+```
+
+# Analyse trait par trait
+
+On boucle sur les traits.
+On commence par tester sur chaque habitat l'effet bloc. 
+Puis modèle complet. Regarder si on fait le modèle sur l'échelle log à partir des résidus.
+
+## Estimation des effets blocs avec un modele par pour le milieu '*sourdough*'
+
+```{r effet block selon milieu}
+listTraits<-c("tVmax","Vmax","CO2max","Cellt27","Mortality","t1g")
+mydatasauve<-mydata
+rm(mydata)
+sauveBlock<-NULL
+for (trait in listTraits) {
+  
+  ######################
+  cat("### ")
+  cat(trait)
+  cat(" ###\n")
+  ######################
+  
+  mydata<-mydatasauve[,c("Habitat","Species","Block","Strain",trait)]
+  colnames(mydata)<-c("Habitat","Species","Block","Strain","trait")
+  mydata$logtrait<-log(mydata$trait)
+  
+  #Test de l'effet block sur l'habitat sourdough
+  mydataV<-mydata[!is.na(mydata$trait),]
+  table(mydataV[,c("Habitat","Block")]) 
+  mydataS<-mydata[mydataV$Habitat=="Sourdough",]
+  LMERS0= lmer(logtrait ~ Species + (1|Strain) +(1|Block), data=mydataS,REML=TRUE)
+  summary(LMERS0)
+  #regarder l'effet bloc
+  print("Sourdough")
+  print(ranef(LMERS0)$Block)
+  print(ranef(LMERS0)$Block/summary(LMERS0)$coeff[1,1])
+  sauveBlock<-rbind.data.frame(sauveBlock,cbind.data.frame(trait,summary(LMERS0)$coeff[1,1],t(ranef(LMERS0)$Block)))
+
+}
+colnames(sauveBlock)<-c("trait","IntSourdough","ConvSourd","DivSourd")
+rownames(sauveBlock)<-NULL
+```
+
+
+## Modèle complet
+
+On travaille sur l'echelle log (résidus mieux pour certaines variables + interprétation est la même pour tous : on estime un rapport). On estime l'effet bloc pour le comparer à celui qu'on a estimé précédemment uniquement sur le milieu *sourdough*.
+
+```{r modele complet log}
+sauveBlock2<-NULL
+
+for (trait in listTraits) {
+  
+  ######################
+  cat("### ")
+  cat(trait)
+  cat(" ###\n")
+  ######################
+  
+  mydata<-mydatasauve[,c("Habitat","Species","Block","Strain",trait)]
+  colnames(mydata)<-c("Habitat","Species","Block","Strain","trait")
+  mydata$logtrait<-log(mydata$trait)
+  
+  mydataV<-mydata[!is.na(mydata$trait),]
+  print("plan expérience")
+  print(table(mydataV[,c("Habitat","Block")]))
+  
+  #on travaille sur la variable en log..ou il faut un glm
+  print(paste("résidus log",trait))
+  LMER0= lmer(logtrait ~Species*Habitat+(1|Strain)+(1|Block),data=mydataV,REML=T)
+  tempo<-as.factor(paste(mydataV$Species,mydataV$Habitat))
+  titre<-paste("résidus log(",trait,")",sep="")
+  #print(plot(LMER0,which=1,main=titre))
+  coul<-as.numeric(tempo)
+  print(plot(fitted(LMER0),residuals(LMER0),col=coul,main=titre))
+  print(legend("topleft",levels(tempo),col=1:4,pch=19))
+  
+  sauveBlock2<-rbind.data.frame(sauveBlock2,cbind.data.frame(trait,summary(LMER0)$coeff[1,1],t(ranef(LMER0)$Block)))
+  
+  print(hist(summary(LMER0)$residuals,main=titre))
+  rm(LMER0)
+  
+}
+
+rownames(sauveBlock2)<-NULL
+colnames(sauveBlock2)<-c("trait","IntAll","ConvAll","DivAll")
+
+sauveBlock<-merge(sauveBlock,sauveBlock2,by="trait")
+```
+
+
+## Estimation de l'effet bloc en effet fixe
+
+Avec seulement les souches présentes dans les deux blocs
+On teste l'interaction, puis on estime l'effet dans le modèle additif si pas d'interaction
+
+```{r effet bloc}
+tempo<-table(mydatasauve[,c("Strain","Block")])
+keep<-rownames(tempo)[tempo[,1]>0 & tempo[,2]>0 ]
+
+mydatasauve2<-mydatasauve[mydatasauve$Strain %in% keep,]
+AnoInter<-NULL
+sauveBlock3<-NULL
+
+for (trait in listTraits) {
+  ######################
+  print("############")
+  print(trait)
+  print("############")
+  ######################
+  mydata<-mydatasauve2[,c("Habitat","Species","Block","Strain",trait)]
+  colnames(mydata)<-c("Habitat","Species","Block","Strain","trait")
+  mydata$logtrait<-log(mydata$trait)
+  
+  mydataV<-mydata[!is.na(mydata$trait),]
+  print("plan expérience")
+  print(table(mydataV[,c("Habitat","Block")]))
+
+  
+  #on travaille sur la variable en log et on calcul des effets fixes Souche et block
+
+  LM0= lm(logtrait ~Strain*Block,data=mydataV)
+  print(anova(LM0))
+  
+  AnoInter<-rbind.data.frame(AnoInter,cbind.data.frame(trait=trait,pInter=anova(LM0)$P[3]))
+  
+  LM0= lm(logtrait ~Strain+Block,data=mydataV)
+  sauveBlock3<-rbind.data.frame(sauveBlock3,cbind.data.frame(trait=trait,BlocDiv=LM0$coefficients["BlockDiversitéphénotypique"]))
+}
+  AnoInter$padj<-p.adjust(AnoInter$pInter,method="BH")
+  sauveBlock3$DivFixe<-sauveBlock3$BlocDiv/2
+  sauveBlock3$ConvFixe<--sauveBlock3$BlocDiv/2
+  sauveBlock<-merge(sauveBlock,sauveBlock3,by="trait")
+  rownames(sauveBlock)<-sauveBlock$trait
+
+```
+
+
+## Analyse de l'effet milieu en effaçant l'effet bloc
+
+on retire au préalable l'effet bloc.
+On estime l'effet milieu pour chaque espèce.
+On stocke l'estimation et l'IC
+
+```{r modele complet inference}
+estRapport<-NULL
+mydatasauve$Id<-paste("Id",1:nrow(mydatasauve),sep="")
+phenotypeC<-mydatasauve[,c("Id","Habitat","Species","Block","Strain")]
+for (trait in listTraits) {
+  ######################
+  print("############")
+  print(trait)
+  print("############")
+  ######################
+  mydata<-mydatasauve[,c("Id","Habitat","Species","Block","Strain",trait)]
+  colnames(mydata)<-c("Id","Habitat","Species","Block","Strain","trait")
+  mydata$logtrait<-log(mydata$trait)
+  
+  mydataV<-mydata[!is.na(mydata$trait),]
+  print("plan expérience")
+  print(table(mydataV[,c("Habitat","Block")]))
+  
+  #on retire l'effet bloc
+  effetBloc<-sauveBlock[trait,c("ConvFixe","DivFixe")]
+  names(effetBloc)<-c("Convergence","Diversitéphénotypique")
+  mydataV$logtraitC[1:nrow(mydataV)]<-mydataV$logtrait-t(effetBloc[mydataV$Block])
+  
+  phenotypeC<-merge(phenotypeC,mydataV,by=c("Id","Habitat","Species","Block","Strain"))
+  colnames(phenotypeC)[colnames(phenotypeC)=="trait"]<-trait
+  colnames(phenotypeC)[colnames(phenotypeC)=="logtrait"]<-paste("log",trait,sep="")
+  colnames(phenotypeC)[colnames(phenotypeC)=="logtraitC"]<-paste("log",trait,"_corr",sep="")
+  
+   #on travaille sur la variable en log..ou il faut un glm
+  LMER0= lmer(logtraitC ~Species*Habitat+(1|Strain),data=mydataV,REML=T)
+
+  #Pour chaque modele
+  #1.résidus
+  titre<-paste("résidus log(",trait,")",sep="")
+  par(mfrow=c(1,3))
+  tempo<-as.factor(paste(mydataV$Species,mydataV$Habitat))
+  coul<-as.numeric(tempo)
+  tempo2<-as.factor(paste(mydataV$Block))
+  pchp<-as.numeric(tempo2)+15
+  
+  print(plot(fitted(LMER0),residuals(LMER0),col=coul,main=titre,pch=pchp))
+  print(legend("topleft",levels(tempo),col=1:length(tempo),pch=19))
+  
+  tempo<-as.factor(paste(mydataV$Strain))
+  coul<-as.numeric(tempo)
+  print(plot(fitted(LMER0),residuals(LMER0),col=coul,main=titre))
+  #print(legend("topleft",levels(tempo),col=1:length(tempo),pch=19))
+  
+  #On va regarder les effets aléatoires selon les habitats
+  HabSpS<-unique(mydataV[,c("Species","Habitat","Strain")])
+  rownames(HabSpS)<-HabSpS$Strain
+  HabSpS$Ranef0<-NA
+  valeurs<-ranef(LMER0)$Strain[1:38,1]
+  noms<-rownames(ranef(LMER0)$Strain)
+  HabSpS[noms,"Ranef0"]<-valeurs
+  print(boxplot(Ranef0 ~ Habitat + Species, data=HabSpS, main=trait))
+  print(aggregate(Ranef0 ~ Habitat + Species, data=HabSpS, FUN=mean))
+
+  #Estimation de l'effet pour chaque espece #Sourdough p/r other"
+  CompB<-c(1,0,1,0)-c(1,0,0,0)
+  CompH<-c(1,1,1,1)-c(1,1,0,0)
+  Comp<-rbind(CompB,CompH)
+  est<-esticon(LMER0, L=Comp,conf.int=T)
+  
+  tempo<-exp(cbind.data.frame(estimate=est$estimate,lwr=est$lwr,upr=est$upr))
+  tempo$trait<-trait
+  tempo$Species<-c("B","H")
+  tempo$p.value<-est$p.value
+  estRapport<-rbind.data.frame(estRapport,tempo)
+  rm(LMER0)
+
+}
+
+pdf("Figure_rapport_debloc.pdf",width=7,height=5)
+#représentation graphique des rapports
+x<-sort(c(1:length(listTraits),1:length(listTraits)+0.2))
+n<-length(listTraits)
+coul=c(2,4)
+names(coul)<-c("B","H")
+plot(x,estRapport[,"estimate"],ylim=range(estRapport[,1:3]),col=coul[estRapport$Species],pch=19,xaxt="n",xlab="",ylab="Rapport Sourdough/Other")
+#axis(1,estRapport$Species,at=x)
+axis(1,listTraits,at=1:n+0.1)
+abline(h=1,lty=2,col=8)
+segments(x,estRapport[,"lwr"],x,estRapport[,"upr"],col=coul[estRapport$Species])
+legend("topleft",c(expression(italic("K.bulderi")),expression(italic("K.humilis"))),col=coul[c("B","H")],lty=1)
+dev.off()
+
+estRapport$p.adj<-p.adjust(estRapport$p.value,method="BH")
+write.table(estRapport,"RapportSourdoughOther_debloc.csv",row.names=F,sep=";")
+write.table(phenotypeC,"myDataCorr.csv",row.names=F,sep=";")
+```
+
