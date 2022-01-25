@@ -3,7 +3,7 @@ data/
 output/
 doc/
 rapports/*.Rmd
-rapports/**/*html
+rapports/*.html
 scripts/download_from_google_drive.sh
 
 .RHistory
