@@ -77,7 +77,7 @@ for (trait in listTraits) {
   
   #Test de l'effet block sur l'habitat sourdough
   mydataV<-mydata[!is.na(mydata$trait),]
-  table(mydataV[,c("Habitat","Block")]) 
+  table(mydataV[,c("Habitat","Block")])
   mydataS<-mydata[mydataV$Habitat=="Sourdough",]
   LMERS0= lmer(logtrait ~ Species + (1|Strain) +(1|Block), data=mydataS,REML=TRUE)
   summary(LMERS0)

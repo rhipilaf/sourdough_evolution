@@ -1,12 +1,43 @@
 
-# Block effect ####
+# BLOCK EFFECT
+
+library(lme4)
 
 traits <- c("cell_t27", "co2max", "death_prct", "lag", "tvmax", "vmax")
 
-data_phenot_parms_clean %>%
+
+# Correction by the block effect
+
+fits <- data_phenot_parms_clean %>%
+  filter(parameter != "cell_t0") %>%
+  mutate(flour_id = strains$flour_id[match(strain_name, strains$strain_name)],
+         baker_id = strains$baker_id[match(strain_name, strains$strain_name)],
+         flour_type = flours$mill_type[match(flour_id, flours$flour_id)],
+         wheat_type = flours$wheat_type[match(flour_id, flours$flour_id)],
+         backslopping = strains$backslopping[match(strain_name, strains$strain_name)],
+         cell_t0 = data_cyto$cell_t0[match(robot_id, data_cyto$robot_id)]) %>%
+  filter(!if_any(everything(), ~ is.na(.x))) %>%
   group_by(parameter) %>%
-  summarise()
-  
+  nest() %>%
+  mutate(fit_sn_ft_wt_bs_bk_Rbm_Rc0 = map(data, ~ lmer(value ~ strain_name + flour_type + wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0),
+                                                     data = .)),
+         fit_ft_wt_bs_bk_Rbm_Rc0 =  map(data, ~ lmer(value ~ flour_type + wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0),
+                                                   data = .)),
+         fit_sn_ft_wt_bs_bk = map(data, ~ lm(value ~ strain_name + flour_type + wheat_type + backslopping + baker_id,
+                                                  data = .)),
+         fit_ft_wt_bs_bk_Rbm_Rc0_Rsn = map(data, ~ lmer(value ~ flour_type + wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0) + (1|strain_name),
+                                                     data = .))) %>%
+  pivot_longer(cols = starts_with("fit_"), names_to = "fit_name", values_to = "fit")
+
+infos <- fits %>%
+  mutate(summary = map(fit, glance)) %>%
+  unnest(summary) %>%
+  select(-data, -fit) %>%
+  arrange(parameter, AIC) %>%
+  group_by(parameter) %>%
+  mutate(deltaAIC = AIC - min(AIC)) %>%
+  select(parameter, fit_name, logLik, AIC, deltaAIC)
+
 
 ## 1. Estimation des effets blocs avec un modele par milieu
 # On estime l'effet bloc uniquement avec le Sourdough.

@@ -22,6 +22,8 @@ A $t_0$ et à $t_{27}$, comptage au cytomètre de flux le nombre de cellules. L'
 
 ### Analyse
 
+#### Extraction des paramètres
+
 * Moyenne glissante et différence glissante
 
 * Ajustement d'un modèle de croissance
@@ -37,3 +39,19 @@ A $t_0$ et à $t_{27}$, comptage au cytomètre de flux le nombre de cellules. L'
     * Tuto : [Fitting differential equation models with Stan](https://shug3502.github.io/blog/DifferentialEqnsStan)
     * Sensitivity analysis : [adjustr](https://corymccartan.github.io/adjustr/), [rgiordan/StanSensitivity](https://github.com/rgiordan/StanSensitivity), 
     * [Hierarchical Gompertz model avec *brms*](https://discourse.mc-stan.org/t/hierarchical-gompertz-model/13724/13), [Stan coding question for Gompertz curve fitting](https://discourse.mc-stan.org/t/stan-coding-question-for-gompertz-curve-fitting/14618), [Estimating Non-Linear Models with brms](https://cran.r-project.org/web/packages/brms/vignettes/brms_nonlinear.html)
+
+#### Analyse de variance
+
+* Unbalanced incomplete block designs
+  
+  * [Testing of hypotheses in unbalanced incomplete block designs | Request PDF](https://www.researchgate.net/publication/288692473_Testing_of_hypotheses_in_unbalanced_incomplete_block_designs)
+  
+  * [Chapter 8 Incomplete Block Designs | ANOVA and Mixed Models](https://stat.ethz.ch/~meier/teaching/anova/incomplete-block-designs.html)
+  
+  * [4.7 - Incomplete Block Designs | STAT 503](https://online.stat.psu.edu/stat503/lesson/4/4.7)
+  
+  * https://stats.oarc.ucla.edu/stata/faq/how-can-i-analyze-an-unbalanced-randomized-block-design/
+  
+  * https://ecommons.cornell.edu/bitstream/handle/1813/32993/BU-885-M.pdf;jsessionid=7F71B991E1D0A5C20EA531BA019B7818?sequence=1
+  
+  * [A thorough randomization in R of a Partially Balanced Incomplete Block Design.](http://rstudio-pubs-static.s3.amazonaws.com/312_5cf6573d98d247d0a23c1d36ed7e7485.html)
