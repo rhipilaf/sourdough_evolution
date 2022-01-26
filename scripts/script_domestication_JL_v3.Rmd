@@ -13,7 +13,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = 'C:/Users/guillert/Desktop/Projets/sourdough_evolution/')
 
-rm(list=ls())
 library(lme4)
 library(lmerTest)
 library(doBy)
@@ -63,6 +62,7 @@ listTraits<-c("tVmax","Vmax","CO2max","Cellt27","Mortality","t1g")
 mydatasauve<-mydata
 rm(mydata)
 sauveBlock<-NULL
+
 for (trait in listTraits) {
   
   ######################
@@ -86,10 +86,12 @@ for (trait in listTraits) {
   print(ranef(LMERS0)$Block)
   print(ranef(LMERS0)$Block/summary(LMERS0)$coeff[1,1])
   sauveBlock<-rbind.data.frame(sauveBlock,cbind.data.frame(trait,summary(LMERS0)$coeff[1,1],t(ranef(LMERS0)$Block)))
-
 }
+
 colnames(sauveBlock)<-c("trait","IntSourdough","ConvSourd","DivSourd")
 rownames(sauveBlock)<-NULL
+
+sauveBlock
 ```
 
 
@@ -137,6 +139,7 @@ rownames(sauveBlock2)<-NULL
 colnames(sauveBlock2)<-c("trait","IntAll","ConvAll","DivAll")
 
 sauveBlock<-merge(sauveBlock,sauveBlock2,by="trait")
+sauveBlock
 ```
 
 
@@ -166,23 +169,24 @@ for (trait in listTraits) {
   mydataV<-mydata[!is.na(mydata$trait),]
   print("plan expérience")
   print(table(mydataV[,c("Habitat","Block")]))
-
+  
   
   #on travaille sur la variable en log et on calcul des effets fixes Souche et block
-
+  
   LM0= lm(logtrait ~Strain*Block,data=mydataV)
   print(anova(LM0))
   
   AnoInter<-rbind.data.frame(AnoInter,cbind.data.frame(trait=trait,pInter=anova(LM0)$P[3]))
   
-  LM0= lm(logtrait ~Strain+Block,data=mydataV)
+  LM0 = lm(logtrait ~Strain+Block,data=mydataV)
   sauveBlock3<-rbind.data.frame(sauveBlock3,cbind.data.frame(trait=trait,BlocDiv=LM0$coefficients["BlockDiversitéphénotypique"]))
 }
-  AnoInter$padj<-p.adjust(AnoInter$pInter,method="BH")
-  sauveBlock3$DivFixe<-sauveBlock3$BlocDiv/2
-  sauveBlock3$ConvFixe<--sauveBlock3$BlocDiv/2
-  sauveBlock<-merge(sauveBlock,sauveBlock3,by="trait")
-  rownames(sauveBlock)<-sauveBlock$trait
+
+AnoInter$padj<-p.adjust(AnoInter$pInter, method="BH")
+sauveBlock3$DivFixe<-sauveBlock3$BlocDiv/2
+sauveBlock3$ConvFixe<--sauveBlock3$BlocDiv/2
+sauveBlock<-merge(sauveBlock,sauveBlock3,by="trait")
+# rownames(sauveBlock)<-sauveBlock$trait
 
 ```
 
@@ -203,6 +207,7 @@ for (trait in listTraits) {
   print(trait)
   print("############")
   ######################
+  
   mydata<-mydatasauve[,c("Id","Habitat","Species","Block","Strain",trait)]
   colnames(mydata)<-c("Id","Habitat","Species","Block","Strain","trait")
   mydata$logtrait<-log(mydata$trait)
@@ -211,19 +216,19 @@ for (trait in listTraits) {
   print("plan expérience")
   print(table(mydataV[,c("Habitat","Block")]))
   
-  #on retire l'effet bloc
-  effetBloc<-sauveBlock[trait,c("ConvFixe","DivFixe")]
+  # On retire l'effet bloc
+  effetBloc<-sauveBlock[trait == trait,c("ConvFixe","DivFixe")]
   names(effetBloc)<-c("Convergence","Diversitéphénotypique")
   mydataV$logtraitC[1:nrow(mydataV)]<-mydataV$logtrait-t(effetBloc[mydataV$Block])
   
   phenotypeC<-merge(phenotypeC,mydataV,by=c("Id","Habitat","Species","Block","Strain"))
-  colnames(phenotypeC)[colnames(phenotypeC)=="trait"]<-trait
-  colnames(phenotypeC)[colnames(phenotypeC)=="logtrait"]<-paste("log",trait,sep="")
-  colnames(phenotypeC)[colnames(phenotypeC)=="logtraitC"]<-paste("log",trait,"_corr",sep="")
+  colnames(phenotypeC)[colnames(phenotypeC)=="trait"] <- trait
+  colnames(phenotypeC)[colnames(phenotypeC)=="logtrait"] <- paste("log",trait,sep="")
+  colnames(phenotypeC)[colnames(phenotypeC)=="logtraitC"] <- paste("log",trait,"_corr",sep="")
   
-   #on travaille sur la variable en log..ou il faut un glm
+  #on travaille sur la variable en log..ou il faut un glm
   LMER0= lmer(logtraitC ~Species*Habitat+(1|Strain),data=mydataV,REML=T)
-
+  
   #Pour chaque modele
   #1.résidus
   titre<-paste("résidus log(",trait,")",sep="")
@@ -250,7 +255,7 @@ for (trait in listTraits) {
   HabSpS[noms,"Ranef0"]<-valeurs
   print(boxplot(Ranef0 ~ Habitat + Species, data=HabSpS, main=trait))
   print(aggregate(Ranef0 ~ Habitat + Species, data=HabSpS, FUN=mean))
-
+  
   #Estimation de l'effet pour chaque espece #Sourdough p/r other"
   CompB<-c(1,0,1,0)-c(1,0,0,0)
   CompH<-c(1,1,1,1)-c(1,1,0,0)
@@ -263,7 +268,7 @@ for (trait in listTraits) {
   tempo$p.value<-est$p.value
   estRapport<-rbind.data.frame(estRapport,tempo)
   rm(LMER0)
-
+  
 }
 
 pdf("Figure_rapport_debloc.pdf",width=7,height=5)

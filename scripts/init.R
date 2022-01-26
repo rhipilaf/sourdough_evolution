@@ -7,6 +7,9 @@ library(ggplot2)
 library(purrr)
 library(broom)
 library(forcats)
+library(lme4)
+library(lmerTest)
+library(broom.mixed)
 
 # GLOBAL SETTINGS ####
 
