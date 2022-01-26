@@ -6,6 +6,7 @@ library(stringr)
 library(ggplot2)
 library(purrr)
 library(broom)
+library(forcats)
 
 # GLOBAL SETTINGS ####
 

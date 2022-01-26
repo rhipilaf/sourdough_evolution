@@ -19,15 +19,15 @@ fits <- data_phenot_parms_clean %>%
   filter(!if_any(everything(), ~ is.na(.x))) %>%
   group_by(parameter) %>%
   nest() %>%
-  mutate(fit_sn_ft_wt_bs_bk_Rbm_Rc0 = map(data, ~ lmer(value ~ strain_name + flour_type + wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0),
-                                                     data = .)),
-         fit_ft_wt_bs_bk_Rbm_Rc0 =  map(data, ~ lmer(value ~ flour_type + wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0),
-                                                   data = .)),
-         fit_sn_ft_wt_bs_bk = map(data, ~ lm(value ~ strain_name + flour_type + wheat_type + backslopping + baker_id,
-                                                  data = .)),
-         fit_ft_wt_bs_bk_Rbm_Rc0_Rsn = map(data, ~ lmer(value ~ flour_type + wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0) + (1|strain_name),
-                                                     data = .))) %>%
+  mutate(fit_sn_ft_wt_bs_bk_Rbm_Rc0 = map(data, ~ lmer(value ~ strain_name + flour_type * wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0), data = .)),
+         fit_sn_Rbm_Rc0 = map(data, ~ lmer(value ~ strain_name + (1|bloc_month) + (1|cell_t0), data = .)),
+         fit_sn = map(data, ~ lm(value ~ strain_name, data = .)),
+         fit_Rsn_Rbm_Rc0 = map(data, ~ lmer(value ~ 1 + (1|strain_name) + (1|bloc_month) + (1|cell_t0), data = .)),
+         fit_ft_wt_bs_bk_Rbm_Rc0 =  map(data, ~ lmer(value ~ flour_type * wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0), data = .)),
+         fit_sn_ft_wt_bs_bk = map(data, ~ lm(value ~ strain_name + flour_type * wheat_type + backslopping + baker_id, data = .)),
+         fit_ft_wt_bs_bk_Rbm_Rc0_Rsn = map(data, ~ lmer(value ~ flour_type * wheat_type + backslopping + baker_id + (1|bloc_month) + (1|cell_t0) + (1|strain_name), data = .))) %>%
   pivot_longer(cols = starts_with("fit_"), names_to = "fit_name", values_to = "fit")
+
 
 infos <- fits %>%
   mutate(summary = map(fit, glance)) %>%
@@ -36,13 +36,43 @@ infos <- fits %>%
   arrange(parameter, AIC) %>%
   group_by(parameter) %>%
   mutate(deltaAIC = AIC - min(AIC)) %>%
-  select(parameter, fit_name, logLik, AIC, deltaAIC)
+  select(parameter, fit_name, logLik, AIC, deltaAIC, sigma, REMLcrit, df.residual) %>%
+  mutate_if(is.numeric, ~ round(.x, 1)) %>%
+  mutate(fit_name = str_replace_all(fit_name, "^fit_", "~ "),
+         fit_name = str_replace_all(fit_name, "_", " + "),
+         fit_name = ifelse(deltaAIC < 2, str_replace_all(fit_name, "^", "**"), fit_name),
+         fit_name = ifelse(deltaAIC < 2, str_replace_all(fit_name, "$", "**"), fit_name)) %>%
+  knitr::kable(format = "pipe", align = "rlrrrrrr")
+
+res_fitted_plots <- fits %>%
+  mutate(summary = map(fit, augment),
+         AIC = map_dbl(fit, ~ unlist(glance(.x))['AIC'])) %>%
+  arrange(parameter, AIC) %>%
+  unnest(summary) %>%
+  select(-data, -fit) %>%
+  group_by(parameter) %>%
+  nest() %>%
+  mutate(data = map(data, ~ .x %>% mutate(fit_name = fct_reorder(fit_name, AIC))), 
+         plots = map2(data, parameter,
+                    ~ ggplot(data = .x) +
+                      aes(x = .fitted, y = .resid) +
+                      geom_point() +
+                      facet_grid(. ~ fit_name, scales = "free") +
+                      theme_minimal() +
+                      ggtitle(.y) +
+                      theme(strip.text.y = element_text(angle = 0),
+                            title = element_text(face = "bold")))) %>%
+  select(plots, parameter) %>%
+  as.list()
+
+gridExtra::arrangeGrob(grobs = res_fitted_plots$plots, ncol = 1, nrow = length(unique(fits$parameter)), top = "") %>%
+  myggsave(., filename = "output/res_fitted_plots", device = "pdf", width = 15, height = 20)
 
 
 ## 1. Estimation des effets blocs avec un modele par milieu
 # On estime l'effet bloc uniquement avec le Sourdough.
 
-LMERS0 = lmer(logtrait ~ Species + (1|Strain) +(1|Block), data=mydataS,REML=TRUE)
+LMERS0 = lmer(logtrait ~ Species + (1|Strain) +(1|Block), data=mydataS, REML=TRUE)
 
 
 ## 2. Modèle complet
