@@ -30,12 +30,12 @@ if(file.exists("data/data_robot/data_phenot_parms_std.rds")) {
     ungroup() %>%
     mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)],
            cell_t0 = data_cyto$cell_t0[match(robot_id, data_cyto$robot_id)],
-           cell_t27 = data_cyto$cell_t27[match(robot_id, data_cyto$robot_id)],
+           pop_size = data_cyto$cell_t27[match(robot_id, data_cyto$robot_id)],
            death_prct = data_cyto$death_prct[match(robot_id, data_cyto$robot_id)],
            bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)],
            bloc_month = data_cyto$bloc_month[match(robot_id, data_cyto$robot_id)]) %>%
     pivot_longer(cols = c("co2max", "vmax", "tvmax", "lag", 
-                          "cell_t0", "cell_t27", "death_prct"),
+                          "cell_t0", "pop_size", "death_prct"),
                  names_to = "parameter", values_to = "value") %>%
     arrange(robot_id, parameter)
   

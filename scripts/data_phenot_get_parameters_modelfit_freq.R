@@ -20,15 +20,27 @@ if(file.exists("data/data_robot/data_phenot_parms_nls.rds")) {
   
 } else {
   
-  # Gompertz curve
-  Gompertz <- function(x, y0, ymax, k, lag){
-    result <- y0 + (ymax -y0)*exp(-exp(k*(lag-x)/(ymax-y0) + 1) )
-    return(result)
-  }
+  # Gompertz growth model (classic model)
+  # Gompertz <- function(x, y0, ymax, k, lag){
+  #   result <- y0 + (ymax -y0)*exp(-exp(k*(lag-x)/(ymax-y0) + 1) )
+  #   return(result)
+  # }
   
   # partial derivative in x (=time) of the Gompertz curve
-  GompD <- mosaicCalc::D(y0 + (ymax -y0)*exp(-exp(k*(lag-x)/(ymax-y0) + 1)) ~ x)
+  #GompD <- mosaicCalc::D(y0 + (ymax -y0)*exp(-exp(k*(lag-x)/(ymax-y0) + 1)) ~ x)
   
+  # Modified Gompertz growth model (Mohammadi et al. 2014)
+  Gompertz <- function(t, pmax, vmax, lambda){
+    
+    result <- pmax*exp(-exp((vmax*exp(1))*(lambda-t)/(pmax) + 1))
+    
+    return(result)
+    
+  }
+
+  # partial derivative in x (=time) of the Gompertz curve
+  GompD <- mosaicCalc::D(pmax*exp(-exp((vmax*exp(1))*(lambda-t)/(pmax) + 1)) ~ t)
+  #pmax*(exp(-exp((vmax*exp(1))*(lambda-t)/(pmax)+1))*(exp((vmax*exp(1))*(lambda-t)/(pmax)+1)*((vmax * exp(1))/(pmax))))
   
   # estimate growth parameters
   cat("Fitting Gompertz curves to the data...\n")

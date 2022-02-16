@@ -11,10 +11,14 @@ myggsave(filename = "output/data_phenot_overview_weight", width = 8, height = 6)
 
 
 # CO2 cumul trends ####
-ggplot(data_phenot) +
-  aes(x = time, y = co2_cumul, group = robot_id) +
+data_phenot %>%
+  mutate(excluded = ifelse(robot_id %in% excluded_replicates$robot_id, TRUE, FALSE)) %>%
+  ggplot() +
+  aes(x = time, y = co2_cumul, group = robot_id, color = excluded) +
   geom_point(shape = ".") +
-  geom_line(alpha = 0.1) +
+  geom_line(aes(size = excluded), alpha = 0.1) +
+  scale_color_manual(values = c("black","red")) +
+  scale_size_manual(values = c(0.05,2)) +
   theme_minimal()
 myggsave(filename = "output/data_phenot_overview_co2_cumul", width = 8, height = 6)
 
