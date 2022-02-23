@@ -63,6 +63,8 @@ More tetraploidy in commercial than in sourdough strains.
 
 No evidence of better fitness of tetraploid strains.
 
+Final population size bigger for diploids than for tetraploids (cell size / population size trade-off).
+
 No effect of ploidy on maximum cumulative CO<sub>2</sub>, time at V<sub>MAX</sub>, and maximum CO<sub>2</sub> production rate.
 
 Tetraploid strains have a significant shorter latency phase in CO<sub>2</sub> production, and some diploid have one too.
