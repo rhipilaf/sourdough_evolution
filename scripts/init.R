@@ -20,10 +20,6 @@ library(sf)
 ## Set working directory. Set here the path of the root of the project
 setwd("C:/Users/guillert/Desktop/Projets/sourdough_evolution/")
 
-## Growth parameter estimation method (std, nls, bayes)
-growth_est_mthd = "nls" # parameter not used yet
-
-
 # FIGURE OUTPUT SETTINGS ####
 
 plot_background = "white"

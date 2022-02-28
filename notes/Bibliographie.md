@@ -75,6 +75,12 @@ Significant latency difference between strains.
 
 (with 15 microsatellites)
 
+- **Commercial 2N and 4N** strains **all together**, with some 4N sourdough
+
+- **Sourdough 2N** strains **all together** (n = 76) **but 8** clustered on one side of the tree.
+
+- **Some closely related sourdough 4N strains** were located on the other side of the tree
+
 Explanatory factors for clustering 
 
 ### Legras *et al.* 2018

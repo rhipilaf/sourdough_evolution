@@ -2,6 +2,12 @@
 
 ## Echantillonnage des levains
 
+### Plan expérimental
+
+Une souche par levain
+
+ajouter le diagramme de Sankey de Lauriane
+
 ### Codage
 
 - **TEMOIN** = levain du boulanger (*i.e.* levures déjà adaptées ?)
@@ -19,10 +25,11 @@ Barboteur sur le dessus, donc pas de contamination possible, et pas d'entrée de
 Milieu liquide, composition cf. Bigey et al. (2021) <u>et Diego pour confirmation de la composition</u>.
 
 A $t_0$ et à $t_{27}$, comptage au cytomètre de flux le nombre de cellules. L'effectif de la population à $t_{27}$ constitue un proxy de la fitness.
+Un bloc expé en septembre 2021 et un en décembre 2021, durant **trois?** jours chacun.
 
 ### Recette du milieu (levain synthétique)
 
-= W-SSM (Wheat Sourdough Simulation Medium) modifié, d’après Vrancken, 2008
+= W-SSM (Wheat Sourdough Simulation Medium) modifié, d’après Vrancken (2008).
 
 - Composition (par L) :
   
@@ -80,15 +87,21 @@ Les variables phénotypiques associées à chaque souche sont des statistiques d
 
 ##### La démographie de la population finale de levures
 
-Ces mesures sont directement mesurées au du cytomètre de flux.
+Ces mesures ont été prise au cytomètre de flux :
 
-- $death_\%$ = pourcentage de cellules morte à $t_f$
+- $p_{dead}$ = proportion de cellules morte à $t_f$
 
-- $pop_{size}$ = population vivante à $t_f$
+- $N_{tot}$ = nombre total de cellules (vivantes et mortes) à $t_f$
+
+Une taille de population $N_{pop}$ à $t_f$ a été calculée comme proxy de la fitness telle que
+
+$$
+N_{pop}=(1-p_{dead})N_{tot}
+$$
 
 ##### La dynamique de fermentation alcoolique des sucres par la population de levures
 
-Cette dynamique est mesurée par perte de poids du système (voir paragraphe 'phénotypage au robot'), proxy direct de la quantié de CO<sub>2</sub> produite par les levures : 
+Cette dynamique est mesurée par perte de poids du système (voir paragraphe 'phénotypage au robot'), proxy direct de la quantié de CO<sub>2</sub> produite par les levures :
 
 $$
 C_6H_{12}O_6 \rightarrow 2 \cdot C_2H_5OH + 2 \cdot CO_2
@@ -128,17 +141,36 @@ $$
 
 L'ajustement de ce modèle de croissance à la production de CO<sub>2</sub> cumulée $p_t$ a été réalisé pour chacun des réplicats par la méthode des moindres carrés avec départs de chaines multiples avec le la fonction R `nls.multstart::nls_multstart()`.
 
-Le $t_{V_{max}}$ a été calculé à posteriori de l'estimation des autres paramètres est cherchant le $t$ pour lequel la dérivée partielle en $t$ de la courbe ajustée aux données est maximale. Cette dérivée partielle s'exprime par la formule suivante :
+Le $t_{V_{max}}$ a été calculé à posteriori de l'estimation des autres paramètres est cherchant le $t$ pour lequel la dérivée partielle en $t$ de la courbe ajustée aux données est maximale. Cette dérivée partielle s'exprime par la formule suivante (à mettre en forme) :
 
 $$
-
+\frac{d_{p_t}}{d_t}= pmax * (exp(-exp((vmax * exp(1)) * (lambda - t)/(pmax) + 1)) * 
+    (exp((vmax * exp(1)) * (lambda - t)/(pmax) + 1) * ((vmax * 
+        exp(1))/(pmax))))
 $$
 
 En perspective, j'aimerai réaliser cet ajustement dans un cadre bayésien ou fréquentiste. Quelques pistes pour faire ça en bayésien : [Fitting differential equation models with Stan](https://shug3502.github.io/blog/DifferentialEqnsStan), [Sensitivity analysis : adjustr](https://corymccartan.github.io/adjustr/), [rgiordan/StanSensitivity](https://github.com/rgiordan/StanSensitivity), [Hierarchical Gompertz model avec *brms*](https://discourse.mc-stan.org/t/hierarchical-gompertz-model/13724/13), [Stan coding question for Gompertz curve fitting](https://discourse.mc-stan.org/t/stan-coding-question-for-gompertz-curve-fitting/14618), [Estimating Non-Linear Models with brms](https://cran.r-project.org/web/packages/brms/vignettes/brms_nonlinear.html).
 
-#### Analyse de variance des paramètres
+#### Effet des modalités expérimentales
 
-- Inoculum size as a random effect : (Davis et al., 2005; Liu et al., 2021)
+Nous avons utilisé un modèle linéaire à effets mixtes pour évaluer l'effet des différentes modalités expérimentales (rafraîchi, boulanger, type de farine) sur les mesures de valeur sélective ($N_{pop}$) et de la dynamique fermentaire ($\lambda$, $p_{max}$, $V_{max}$ et $t_{V_{max}}$). Dans le modèle complet (formule #), les modalités expérimentales ont été mises en effet fixe. Un effet aléatoire *bloc expérimental* a été ajouté pour tenir compte du découpage dans le temps de l'expérimentation sur les deux périodes distinctes.
+
+$$
+Y_{ij}= \beta_i + 
+$$
+
+#### Test de l'effet aléatoire
+
+Nous avons testé la significativité de l'effet aléatoire *bloc expérimental* avec un test LRT avant de l'intégrer définitivement au modèle.
+
+#### Ajustement du modèle sélectionné
+
+---
+
+## Sources
+
+Inoculum size as a random effect : (Davis et al., 2005; Liu et al., 2021)
+
 * Unbalanced incomplete block designs
   
   * [Testing of hypotheses in unbalanced incomplete block designs | Request PDF](https://www.researchgate.net/publication/288692473_Testing_of_hypotheses_in_unbalanced_incomplete_block_designs)
@@ -160,3 +192,4 @@ En perspective, j'aimerai réaliser cet ajustement dans un cadre bayésien ou fr
 * Rank deficiency
   
   * [r - What is rank deficiency, and how to deal with it? - Cross Validated](https://stats.stackexchange.com/questions/35071/what-is-rank-deficiency-and-how-to-deal-with-it)
+- To show CI for fitted slopes : [Use a model to make predictions • modelbased](https://easystats.github.io/modelbased/articles/estimate_response.html)

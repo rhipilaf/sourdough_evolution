@@ -271,7 +271,7 @@ for (trait in listTraits) {
   
 }
 
-pdf("Figure_rapport_debloc.pdf",width=7,height=5)
+pdf("output/Figure_rapport_debloc.pdf",width=7,height=5)
 #représentation graphique des rapports
 x<-sort(c(1:length(listTraits),1:length(listTraits)+0.2))
 n<-length(listTraits)
@@ -286,8 +286,8 @@ legend("topleft",c(expression(italic("K.bulderi")),expression(italic("K.humilis"
 dev.off()
 
 estRapport$p.adj<-p.adjust(estRapport$p.value,method="BH")
-write.table(estRapport,"RapportSourdoughOther_debloc.csv",row.names=F,sep=";")
-write.table(phenotypeC,"myDataCorr.csv",row.names=F,sep=";")
+write.table(estRapport,"output/RapportSourdoughOther_debloc.csv",row.names=F,sep=";")
+write.table(phenotypeC,"output/myDataCorr.csv",row.names=F,sep=";")
 ```
 
 

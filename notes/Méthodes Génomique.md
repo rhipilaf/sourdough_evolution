@@ -4,6 +4,12 @@ Une ligne de fichier fastq consiste en un *read* et des adaptateurs.
 
 Chaque read apparatient à une paire qui ont été lu sur le même brin. Dans les deux fichiers .fastq, les paires de reads sont dans le même ordre.
 
+### Fonction pour avoir la longueur d'une sequence
+
+`sequenceLength.pl` directement accessible sur le serveur
+
+Génère un tableau nécessaire à mettre dans l'argument 2 du script `runGATKtoMatrix.R`
+
 ### Couverture
 
 Taille génome S. cerev. = 12 Mb
@@ -106,11 +112,10 @@ runPlotGATKStat.R 03_callpool/2-EC1118_4n_rawSNP_stat.txt ouput.pdf
 `gatk [...] VariantFiltration [...]` functioning :
 
 - Spécifier les règles d'exclusion et non d'inclusion !
-  
+
 - Les valeurs doivent être des chiffres à virgule
-  
+
 - Lors du filtrage, il ajoute en flag le nom du filtre si le SNP correspond à la règle de filtre. Si elle ne correspond pas, le flag devient `PASS`
-  
 
 ##### Effective filtering
 
@@ -127,9 +132,8 @@ L'idée est de donner du poids à de potentiels SNPs ayant le même profil que l
 ##### Génération d'un fichier de recalibration
 
 - le fichier bam utilisé est le fichier .bam de base lors du premier SNP calling fait avec `gatk`.
-  
+
 - `BQSR_table.tmp` est le fichier de recalibration qui est temporaire. Dans le cas ou je parallélise, il faut bien que ce soit un nom propre à l'échantillon.
-  
 
 ```bash
 /opt/gatk-4.2.5.0/gatk --java-options "-Xmx16g" BaseRecalibrator -R 01_refgenome/S288c_ABC.fasta -I /media/workspace/cbecerra/ALE2022/02_mappool/fixed_platform/2-EC1118.bam -O BQSR_table.tmp --known-sites 03_callpool/2-EC1118_4n_HQSNP.vcf 
@@ -148,3 +152,28 @@ Et maintenant il faut relancer le SNP calling sur le nouveau fichier bam recalib
 #### Distance génétique
 
 Dans Gutaker et al 2019, = 1- IBS (identity by state ; [Identity by type - Wikipedia](https://en.wikipedia.org/wiki/Identity_by_type))
+
+#### Données fréquences alléliques
+
+Supprimer les lignes non informatives qui ont les même freq allélique
+
+Suppr les lignes avec des -1 sauf peut-être pour la couverture
+
+##### Plot fréquence allélique vs position dans le génome
+
+Afficher les bordures de chromosomes !
+
+#### Représenter la couverture
+
+`samtools depth -aa fichier.bam > fichier.bam.depth`
+
+`-aa` = toutes les positions même celles qui ne sont pas couvertes (affiche les 0)
+
+nombre de reads moyens le long du génome : fenetre de 1000 avec un pas de 500
+Fonction de fenetre glissante peut être codée en C (utilisable sous R une fois compilé)
+`mcapply` ? = multicore apply
+Profondeur en log2 ?
+Afficher les bordures de chromosomes !
+Voir ce qu'il se passe au niveau des régions ABC qui ont une couverture très faible
+
+### Collecte données NCBI

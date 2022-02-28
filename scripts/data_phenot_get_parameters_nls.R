@@ -38,7 +38,7 @@ if(file.exists("data/data_robot/data_phenot_parms_nls.rds")) {
     
   }
 
-  # partial derivative in x (=time) of the Gompertz curve
+  # partial derivative in t (=time) of the Gompertz curve
   GompD <- mosaicCalc::D(pmax*exp(-exp((vmax*exp(1))*(lambda-t)/(pmax) + 1)) ~ t)
   #pmax*(exp(-exp((vmax*exp(1))*(lambda-t)/(pmax)+1))*(exp((vmax*exp(1))*(lambda-t)/(pmax)+1)*((vmax * exp(1))/(pmax))))
   
@@ -47,14 +47,14 @@ if(file.exists("data/data_robot/data_phenot_parms_nls.rds")) {
   data_phenot_parms_fits <- data_phenot %>%
     group_by(robot_id) %>%
     nest() %>%
-    mutate(fit = purrr::map(data, ~ nls.multstart::nls_multstart(co2_cumul ~ Gompertz(time, y0, ymax, k, lag),
+    mutate(fit = purrr::map(data, ~ nls.multstart::nls_multstart(co2_cumul ~ Gompertz(t = time, pmax, vmax, lambda),
                                                                  data = .x,
                                                                  iter = 1000,
-                                                                 start_lower = c(y0 = 0, ymax = 20, k = 2, lag = 4),
-                                                                 start_upper = c(y0 = 0.5, ymax = 25, k = 4.5, lag = 12),
+                                                                 start_lower = c(pmax = 20, vmax = 2, lambda = 4),
+                                                                 start_upper = c(pmax = 25, vmax = 4.5, lambda = 12),
                                                                  supp_errors = 'Y',
                                                                  na.action = na.omit,
-                                                                 lower = c(y0 = 0, ymax = 0, k = 0, lag = 0))))
+                                                                 lower = c(pmax = 0, vmax = 0, lambda = 0))))
   
   # get models goodness-of-fit indicators
   data_phenot_parms_nls_info <- data_phenot_parms_fits %>%
@@ -75,7 +75,7 @@ if(file.exists("data/data_robot/data_phenot_parms_nls.rds")) {
     unnest(cis) %>%
     rename(conf.low = X2.5.., conf.high = X97.5..) %>%
     group_by(robot_id) %>%
-    mutate(term = c('y0', 'ymax', 'k', 'lag')) %>%
+    mutate(term = c("pmax", "vmax", "lambda")) %>%
     ungroup() %>%
     select(-data, -fit)
   
@@ -95,30 +95,29 @@ if(file.exists("data/data_robot/data_phenot_parms_nls.rds")) {
     select(robot_id, term, estimate) %>%
     group_by(robot_id) %>%
     summarise(tvmax = optimize(GompD, 
-                               y0 = estimate[term == "y0"], 
-                               ymax = estimate[term == "ymax"], 
-                               lag = estimate[term == "lag"],  
-                               k = estimate[term == "k"],  
+                               pmax = estimate[term == "pmax"], 
+                               lambda = estimate[term == "lambda"],  
+                               vmax = estimate[term == "vmax"],  
                                maximum = T, interval = c(0, 40))$maximum) %>%
     pivot_longer(cols = "tvmax", names_to = "term", values_to = "estimate") %>%
     bind_rows(., data_phenot_parms) %>%
-    mutate(term = case_when(term == "k" ~ "co2max",
-                            term == "lag" ~ "lag",
+    mutate(term = case_when(term == "pmax" ~ "co2max",
+                            term == "lambda" ~ "lag",
                             term == "tvmax" ~ "tvmax",
-                            term == "ymax" ~ "vmax",
+                            term == "vmax" ~ "vmax",
                             TRUE ~ term)) %>%
     bind_rows(., data_cyto %>%
-                select(robot_id, cell_t0, cell_t27, death_prct) %>%
+                select(robot_id, cell_t0, pop_size, death_prct) %>%
                 unique() %>%
-                pivot_longer(cols = c("cell_t0", "cell_t27","death_prct"), 
+                pivot_longer(cols = c("cell_t0", "pop_size","death_prct"), 
                              names_to = "term", values_to = "estimate")) %>%
     arrange(robot_id, term) %>%
     mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)],
-           bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)]) %>%
+           bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)],
+           bloc_month = data_cyto$bloc_month[match(robot_id, data_cyto$robot_id)]) %>%
     rename(parameter = term, value = estimate) %>%
     relocate(robot_id, strain_name, bloc)
     
-
 
   # ggplot() +
   #   geom_function(fun = Gompertz, 
@@ -130,6 +129,5 @@ if(file.exists("data/data_robot/data_phenot_parms_nls.rds")) {
   saveRDS(data_phenot_parms, "data/data_robot/data_phenot_parms_nls.rds")
   saveRDS(data_phenot_parms_nls_info, "data/data_robot/data_phenot_parms_nls_info.rds")
   saveRDS(data_phenot_parms_nls_preds, "data/data_robot/data_phenot_parms_nls_preds.rds")
-  
   
 }
