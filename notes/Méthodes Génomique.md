@@ -1,4 +1,21 @@
-Données de séquences
+# Données de séquences
+
+## Répertoires de stockage des données brutes
+
+```bash
+/media/data/Bakery/These_Lucas/BGI_JAN2022/ #Souches Lucas
+/media/data/Bakery/These_Lauriane/BGI_JAN2022/ #Souches Lauriane
+/media/data/Bakery/Master_Theo/other_strains/fq_files/ #Souches en plus
+/media/data/Bakery/BGI_MAR2022/ #Souches Lauriane, Lucas et commerciales
+```
+
+### Files list generation
+
+```bash
+ for f in $(cat 99_metadata/data_repos.txt); do ls $f*_[1-2].f*; done | grep "^/*" 1> 99_metadata/raw_files.txt
+```
+
+## Processing
 
 Une ligne de fichier fastq consiste en un *read* et des adaptateurs.
 
@@ -20,6 +37,36 @@ Pour des individus, une couverture de 100 suffit. Pour des pops, une couverture 
 
 Avec des reads de 150b, la probabilité de chevauchement entre reads et plus probable qu'en 75
 
+### Encoding detection
+
+```bash
+vsearch="/media/workspace/guillert/sdgh_evol/98_softwares/vsearch-2.21.1-linux-x86_64/bin/vsearch"
+for f in $(cat 99_metadata/raw_files.txt | grep "_1.f")
+do
+sample=$(echo $f | awk -F "/" '{print $NF}' - | awk -F "." '{print $1}' - )
+$vsearch --fastq_chars $f > 99_metadata/encoding/$sample.chars
+done
+```
+
+```bash
+touch 99_metadata/encoding/phred_summary.txt
+for f in $(ls 99_metadata/encoding/*.chars)
+do
+sample=$(echo $f | awk -F "/" '{print $NF}' - | awk -F "." '{print $1}' - )
+echo $sample " " $(grep "Guess:" $f | grep "(phred") >> 99_metadata/encoding/phred_summary.txt
+done
+```
+
+BGI = phred64
+
+Peter et al = phred33
+
+Evolya = phred33
+
+Bigey = phred33
+
+Gallone = phred33
+
 ### Controle qualité
 
 FastQC reports
@@ -38,7 +85,7 @@ nohup ./trimming.sh 1>./00_trimming/trimming_$(date '+%Y-%m-%d_%H-%M-%S').log 2>
 
 `samtools` = donne un fichier `.fai`
 
-### Mapping (`bwa mem`)
+### Mapping/alignement des reads (`bwa mem`)
 
 Ne pas générer tous les fichiers `.sam` un par un car ils sont très gros. Il faut le nettoyer avant de lancer un second.
 
@@ -46,9 +93,9 @@ Ne pas générer tous les fichiers `.sam` un par un car ils sont très gros. Il 
 
 `samtools stat`
 
-`samtools flimate`
+`samtools fixmate`
 
-`-r` = supprime les flags 4 et 256 ()
+`-r` = supprime les flags 4 et 256
 `-m` = calcule un score d'appariement
 `-@` # = nombre de threads de mémoire utilisés. Ne pas trop en utiliser car cela peut prendre plus de temps
 
@@ -66,6 +113,63 @@ nohup ./mapping.sh 1 01_refgenome/S288c_ABC.fasta 00_trimming 02_mapping 1>02_ma
 
 ```bash
 nohup ./calling.sh 3 01_refgenome/S288c_ABC.fasta 02_mapping 03_calling 1>03_calling/calling_$(date '+%Y-%m-%d_%H-%M-%S').log 2>&1 &
+```
+
+### Extraction des SNPs
+
+#### Combiner les GVCFs
+
+Permet d'avoir l'ensemble des souches dans un seul fichier avec l'ensemble des SNPs étant variable au moins pour une des souches :
+
+```bash
+ls 03_calling/*.g.vcf > gvcf.list
+nohup ./combining.sh 01_refgenome/S288c_ABC.fasta gvcf.list 04_SNPfiltering/allGenotypes_combined.g.vcf 1>04_SNPfiltering/combining_$(date '+%Y-%m-%d_%H-%M-%S').log 2>&1 &
+```
+
+#### Récupérer les SNP bialléliques
+
+```bash
+nohup ./buildCohorteBialSNP.sh 04_SNPfiltering/allGenotypes_combined.g.vcf 04_SNPfiltering/allGenotypes_filtered 01_refgenome/S288c_ABC.fasta 1>>04_SNPfiltering/buildCohorteBialSNP.sh.log 2>&1 &
+```
+
+Le hard filtering est paramétré selon les recommandations
+
+#### Extraction des fréquences alléliques
+
+Extraires les données de fréquences alléliques
+
+```bash
+sequenceLength.pl -i 01_refgenome/S288c_ABC.fasta > 01_refgenome/S288c_ABC.length
+./runGATKtoMatrix.R 04_SNPfiltering/allGenotypes_filtered.table 01_refgenome/S288c_ABC.length 05_foranalysis/allGenotypes_AlleleFreq.csv
+```
+
+#### Extraire la couverture
+
+```bash
+nohup ./gettingdepth.sh 1>04_SNPfiltering/combining_$(date '+%Y-%m-%d_%H-%M-%S').log 2>&1 &
+```
+
+##### Compresser la couverture
+
+Fenetre de 1000, pas de 500
+
+```bash
+for f in $(ls 02_mapping/*.bam.depth); do ./depth_compression.R $f 06_depth; done
+```
+
+Warning :
+
+```R
+Processing 02_mapping/ERR1308783.bam.depth -DONE
+Warning message: In scan(file = file, what = what, sep = sep, quote = quote, dec = dec,  :
+le nombre d'objets lus n'est pas un multiple du nombre de colonnes
+```
+
+#### Extraire les séquences consensus
+
+```bash
+gatk=/opt/gatk-4.2.5.0/gatk
+$gatk FastaAlternateReferenceMaker -R 01_refgenome/S288c_ABC.fasta -O 05_foranalysis/allGenotypes_consensus.fasta -V 04_SNPfiltering/allGenotypes_filtered.vcf
 ```
 
 ### For PoolSeq analysis
@@ -145,25 +249,25 @@ L'idée est de donner du poids à de potentiels SNPs ayant le même profil que l
 /opt/gatk-4.2.5.0/gatk --java-options "-Xmx16g" ApplyBQSR -R 01_refgenome/S288c_ABC.fasta -I /media/workspace/cbecerra/ALE2022/02_mappool/fixed_platform/2-EC1118.bam -O 02_mappool/2-EC1118_recal_4n.bam --bqsr-recal-file BQSR_table.tmp
 ```
 
-Et maintenant il faut relancer le SNP calling sur le nouveau fichier bam recalibré `*_recal.bam`
+Et maintenant il faut relancer le SNP calling sur le nouveau fichier bam recalibré `*_recal.bam`.
 
-### Analyse des données génomiques
+## Analyse des données génomiques
 
-#### Distance génétique
+### Distance génétique
 
 Dans Gutaker et al 2019, = 1- IBS (identity by state ; [Identity by type - Wikipedia](https://en.wikipedia.org/wiki/Identity_by_type))
 
-#### Données fréquences alléliques
+### Fréquences alléliques
 
 Supprimer les lignes non informatives qui ont les même freq allélique
 
-Suppr les lignes avec des -1 sauf peut-être pour la couverture
+Suppr les lignes ayant au moins un -1 sauf peut-être pour l'analyse de la couverture
 
-##### Plot fréquence allélique vs position dans le génome
+#### Plot fréquence allélique vs position dans le génome
 
-Afficher les bordures de chromosomes !
+Mettre en évidence les limites des chromosomes avec des lignes verticales
 
-#### Représenter la couverture
+### Couverture
 
 `samtools depth -aa fichier.bam > fichier.bam.depth`
 
@@ -176,4 +280,149 @@ Profondeur en log2 ?
 Afficher les bordures de chromosomes !
 Voir ce qu'il se passe au niveau des régions ABC qui ont une couverture très faible
 
-### Collecte données NCBI
+### D de Tajima
+
+Doit être fait sur une population
+
+*"**Tajima’s D**. We calculated nucleotide diversity (mean of pairwise sequence differences within population) and number of segregating sites for each population in each photoperiod response gene (Supplementary Methods 2.18). We then calculated Tajima’s D by applying equations implemented in `tajima.test` function of the `pegas` package to quad-allelic individuals. Finally, we visualized the empirical distribution for Tajima’s D using the `yarrr` package in `R` v.3.4.1 (ref. 55) and highlighted genes in the 99th percentile of this empirical distribution."* (Gutaker et al. 2019)
+
+## Collecte données NCBI
+
+Répertoire des données : `/media/data/Bakery/Master_Theo`
+
+### Téléchargement des fichiers `.sra`
+
+`downloadingSRAfiles.sh` script (*à fignoler!*)
+
+```bash
+#!/bin/bash
+
+path_ouput=/media/data/Bakery/Master_Theo/other_strains/sra_files
+log_file=$path_ouput/sra_dl_$(date '+%Y-%m-%d_%H-%M-%S').log
+prefetch=/opt/sratoolkit.3.0.0-ubuntu64/bin/prefetch
+touch $log_file
+
+for s in $(cut -f8 99_metadata/other_strains.tsv | tail -n +2)
+do
+    sra=${x}.sra
+
+    if test -f "$path_ouput/$sra"; then
+        echo "$sra already downloaded."
+        continue
+    fi
+
+    $prefetch -o $path_output/$sra $s 1>>$log_file 2>&1
+done
+```
+
+To backgroundly start the downloading
+
+```bash
+nohup ./downloadSRAfiles.sh 1>>downloadSRAfiles.sh.log 2>&1 &
+```
+
+### Extraction des fichiers` .fastq` à partir d'un `.sra`
+
+`SRAtoFq.sh` (a rendre plus polyvalent, car cette version prend tout ce qu'il y a dans le répertoire à sra et )
+
+```bash
+#!/bin/bash
+
+path_sra=/media/data/Bakery/Master_Theo/other_strains/sra_files
+path_output=/media/data/Bakery/Master_Theo/other_strains/fq_files
+fasterqdump=/opt/sratoolkit.3.0.0-ubuntu64/bin/fastq-dump
+log_file=$path_ouput/sra_to_fq_$(date '+%Y-%m-%d_%H-%M-%S').log
+touch $log_file
+
+for s in $(ls $path_sra)
+do
+    sra=${s}.sra
+    fq1=${s}_1.fastq
+    fq2=${s}_2.fastq
+
+    if [test -f "$path_ouput/$fq1"] && [test -f "$path_ouput/$fq2"]; then
+        echo "$s already dumped into fastq."
+        continue
+    fi
+
+    $fasterqdump --split-files -O $path_output $path_sra/$sra 1>>$log_file 2>&1
+
+done
+```
+
+To backgroundly start the dumping :
+
+```bash
+nohup ./SRAtoFQ.sh 1>>SRAtoFQ.sh.log 2>&1 &
+```
+
+To compare files sizes between origin and destination :
+
+```bash
+source=/media/data/Bakery/Master_Theo/other_strains/sra_files
+target=/media/workspace/guillert/sdgh_evol
+
+
+for i in "$source"/*.sra
+do
+ f1=`stat -c%s $i`
+ f2=`stat -c%s $target/${i##*/}`
+  if [ "$f1" = "$f2" ]; then
+        echo "$i" "$f1" VS "$target/${i##*/}" "$f2" "====>>>" "OK"
+  else
+        echo "$i" "$f1" VS "$target/${i##*/}" "$f2" "====>>>" "BAD"
+  fi
+done
+```
+
+```bash
+grep "====>>> BAD" Zmachin.txt | awk -F '/' '{print $8}' - | awk -F ' ' '{print $1}' - > failed_sra.list
+```
+
+pangenome = union
+
+core genome = intersection
+
+regarder les stats de reads non mappés pour voir si certains échantillons
+
+S288C + ABC = chimérique => S288C le plus complet / ABC (issues de EC1118) régions d'intérêt pour la fermentation (régions ABC poster à côté du bureau de Virginie)
+
+```bash
+nohup ./jobs.sh 1>jobs_sh_$(date '+%Y-%m-%d_%H-%M-%S').log 2>&1 &
+```
+
+## Divers
+
+### Pour faire un assemblage rapide
+
+```bash
+/opt/SPAdes-3.15.3-Linux/bin/spades.py --pe-1 /media/data/Bakery/BGI_25   
+```
+
+$$
+V_t = \frac{p_{t-1} + p_t + p_{t+1}}{xxxxxx} \approx \frac{d{p_t}}{dt}
+$$
+
+V_t = \frac{p_{t-1} + p_t + p_{t+1}}{xxxxxx} \approx \frac{d{p_t}}{dt}
+
+$$
+V_t = \frac{\sum_{t = -h}^{h}(p_t)}{\sum_{t = -h}^{h}(t)}
+$$
+
+### Renommage des fichiers de Fred Bigey
+
+```bash
+for f in $(find /media/data/Bakery/papier_Bigey2021/ | grep fastq); do 
+sample=$(echo $f | awk -F "OSW" '{print $1}' - | awk -F "_" '{print $3}' - ) 
+b=$(echo $f | awk -F "_" '{print $5}' - )
+ln -sT $f /media/data/Bakery/Master_Theo/papier_Bigey2021_symlinks/${sample}_${b}.fq.gz 
+done
+```
+
+(Jombart, 2009) = review de méthodo
+
+PCoA et pas PCA (Higgins 1992)
+
+Regroupement hiérarchique
+
+# 

@@ -16,8 +16,7 @@ if(file.exists("data/data_robot/data_phenot_parms_std.rds")) {
   
   data_phenot_parms <- readRDS("data/data_robot/data_phenot_parms_std.rds")
   
-  
-} else {
+  } else {
   
   # Extracts statistiques from the CO2 cumulation (g) and CO2 flow rate (g/h)
   data_phenot_parms <- data_phenot %>%
@@ -29,12 +28,13 @@ if(file.exists("data/data_robot/data_phenot_parms_std.rds")) {
     ungroup() %>%
     mutate(strain_name = data_cyto$strain_name[match(robot_id, data_cyto$robot_id)],
            cell_t0 = data_cyto$cell_t0[match(robot_id, data_cyto$robot_id)],
-           pop_size = data_cyto$pop_size[match(robot_id, data_cyto$robot_id)],
-           death_prct = data_cyto$death_prct[match(robot_id, data_cyto$robot_id)],
+           npop = data_cyto$npop[match(robot_id, data_cyto$robot_id)],
+           ntot = data_cyto$ntot[match(robot_id, data_cyto$robot_id)],
+           pdead = data_cyto$pdead[match(robot_id, data_cyto$robot_id)],
            bloc = data_cyto$bloc[match(robot_id, data_cyto$robot_id)],
            bloc_month = data_cyto$bloc_month[match(robot_id, data_cyto$robot_id)]) %>%
     pivot_longer(cols = c("co2max", "vmax", "tvmax", "lag", 
-                          "cell_t0", "pop_size", "death_prct"),
+                          "cell_t0", "npop", "ntot", "pdead"),
                  names_to = "parameter", values_to = "value") %>%
     arrange(robot_id, parameter)
   

@@ -1,10 +1,15 @@
+admin/
 mess/
 data/
 output/
 doc/
 rapports/*.Rmd
 rapports/*.md
+rapport/
+presentation/
 scripts/download_from_google_drive.sh
-
+notes/Remerciements
 .RHistory
 .RData
+notes/Remerciements.md
+notes/Truc_LaTeX.md 

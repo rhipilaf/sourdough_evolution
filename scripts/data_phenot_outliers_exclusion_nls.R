@@ -22,3 +22,4 @@ data_phenot_clean <- data_phenot %>%
 data_phenot_parms_clean <- data_phenot_parms %>% 
   filter(!(robot_id %in% excluded_replicates$robot_id))
 
+if (file.exists(u)) 
