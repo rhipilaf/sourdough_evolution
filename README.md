@@ -4,6 +4,6 @@
 
 - Dans `rapports/` : rapports en `.markdown` utilisés au même titre que des scripts pour lancer et annoter mes analyses
 
-- Dans `scripts/` : scripts utilisés pour les tâches de routine et certaines analyses
+- Dans `scripts/` : scripts R et Bash utilisés pour les tâches de routine et certaines analyses
 
 - Dans `notes/` : quelques notes
