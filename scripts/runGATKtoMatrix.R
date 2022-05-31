@@ -7,7 +7,6 @@ args <- commandArgs(TRUE)
 # 1) Input GATK file
 # 2) Input sequence length
 # 3) Ouput file path (write.table)
-
 if( length(args) != 3 ) {
   stop("The number of input arguments must be 3.")
 }
@@ -21,20 +20,8 @@ if( !file.exists(in.len) ) {
   stop("The provided input length file does not exists (arg #2).")
 }
 
-
-input = "data/data_geno/04_SNPfiltering/allGenotypes_filtered.vcf"
-in.len = "data/data_geno/01_refgenome/S288c_ABC.length"
-
 # Load data
 m <- read.table(input, header = TRUE, stringsAsFactors = FALSE)
-
-# Load names
-m_names <- readLines(input)
-m_names<-m_names[-(grep("#CHROM",m_names)+1):-(length(m_names))]
-m_names<-unlist(strsplit(m_names[length(m_names)],"\t"))
-names(m)<-m_names
-
-
 len <- read.table(in.len, header = FALSE, stringsAsFactors = FALSE)
 
 # Sub-functions
@@ -49,12 +36,11 @@ bial_alt_freq <- function(x) {
 }
 
 # Get sample Col index
-col.spl <- grep("^LB", names(m))
+col.spl <- grep("\\.AD$", names(m))
 
 # Get allelic freq
 m.alt.freq <- apply(m[col.spl], 2, function(co) {
-  tmp <- sapply(strsplit(co, ","), bial_alt_freq)
-  return(tmp)
+  return(sapply(strsplit(co, ","), bial_alt_freq))
 })
 
 # Compute the cumulative location
